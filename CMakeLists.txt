@@ -24,3 +24,5 @@ add_subdirectory(bitmap)
 # My hero http://stackoverflow.com/a/16404000
 
 add_subdirectory(block_store) # depends on bitmap
+
+add_subdirectory(c_map) # depends on dyn_array

@@ -33,6 +33,11 @@ Current libraries:
 		- Better utility implementation, block based. Actually, may be better to just offload block work to the OS? (the way it is now)
 		- Make in-memory optional, add flag (FILE_BACKED) and detect and switch internal functions if it's set
 			- mmap? anonymous files? Voodoo?
+- c_map (v1.0)
+    - Extremely speciffic map wrapper that will probably only be used once.
+    - c-string to c-string multimap!
+    - Limited API!
+        - No removal functions!
 
 Eventually (maybe):
 - dyn_list
