@@ -16,3 +16,9 @@ install(FILES include/${PROJECT_NAME}.h DESTINATION include)
 set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
 	CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)
 
+set(CMAKE_BUILD_TYPE Debug)
+enable_testing()
+add_executable(c_map_tester test/tester.c)
+target_link_libraries(c_map_tester dyn_array ${PROJECT_NAME})
+add_test(tester c_map_tester)
+
