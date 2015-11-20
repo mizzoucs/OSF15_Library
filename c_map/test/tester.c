@@ -9,10 +9,11 @@ int main(void) {
     char *key;
     char *value;
     c_map_t *map = c_map_create();
-
+	
     FILE *fp = fopen("dataset.txt", "r");
+	
     if (!fp) {
-        fputs("FAILURE TO OPEN FILE\n", stdout);
+        fputs("FAILURE TO OPEN FILE, create a test file of 10 entries with 2 columns of data called dataset.txt\n", stdout);
         return -1;
     }
     key = calloc(MAX_STR_LEN, sizeof(char));
@@ -42,7 +43,5 @@ int main(void) {
 
     c_map_destroy(map);
     fclose(fp);
-
-    puts("Done?");
 
 }
