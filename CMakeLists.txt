@@ -17,12 +17,6 @@ set(CMAKE_COLOR_MAKEFILE ON)
 #  set(ctest_test_args ${ctest_test_args} PARALLEL_LEVEL ${N})
 #endif()
 
-add_subdirectory(dyn_array)
-
-add_subdirectory(bitmap)
-
 # My hero http://stackoverflow.com/a/16404000
-
-add_subdirectory(block_store) # depends on bitmap
 
 add_subdirectory(c_map) # depends on dyn_array
