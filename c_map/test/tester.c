@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <dyn_array.h>
-#include <c_map.h>
+#include "../include/c_map.h"
 
 #define MAX_STR_LEN 50
 
