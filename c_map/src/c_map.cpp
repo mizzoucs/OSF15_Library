@@ -35,7 +35,8 @@ c_map_t *c_map_create() {
 //
 void c_map_destroy(c_map_t *const c_map) {
     try {
-        delete c_map;
+        delete(map_type *)c_map; // Fun fact: C++ won't recognize this as an object if we don't cast
+        // So it won't call the destructors and instead just free it
     } catch (std::exception &e) {
         std::cerr << "WAY2GO: " << e.what() << std::endl;
     }
@@ -90,8 +91,8 @@ dyn_array_t *c_map_get_values(const c_map_t *const c_map, const char *const key)
                 value_array = dyn_array_create(values->second.size(), sizeof(char *), NULL);
                 if (value_array) {
                     for (auto &value_strings : values->second) {
-                    	// Once again, it knows I'm up to something weird
-                    	const char *value_ptr = value_strings.c_str();
+                        // Once again, it knows I'm up to something weird
+                        const char *value_ptr = value_strings.c_str();
                         if (!dyn_array_push_back(value_array, &value_ptr)) {
                             // dyn_array broke somehow
                             dyn_array_destroy(value_array);
