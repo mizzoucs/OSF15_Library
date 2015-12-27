@@ -39,15 +39,15 @@ struct clist_itr {
 
 // Does what it sounds like, inserts count objects from data_src after position
 // False on parameter or malloc failure
-bool clist_core_insert(clist_t *const clist, const clist_itr_t position, const size_t count, const size_t data_size, const void *const data_src);
+bool clist_core_insert(const clist_itr_t position, const size_t count, const size_t data_size, const void *const data_src);
 
 // Extracts count objects from position, placing it in data_dest and removing the nodes
 // False on parameter error
-bool clist_core_extract(clist_t *const clist, const clist_itr_t position, const size_t count, void *data_dest);
+bool clist_core_extract(const clist_itr_t position, const size_t count, void *data_dest);
 
 // Deconstructs count objects at position and removes the nodes.
 // False on parameter error
-bool clist_core_deconstruct(clist_t *const clist, const clist_itr_t position, const size_t count);
+bool clist_core_deconstruct(const clist_itr_t position, const size_t count);
 
 // Hunts down the requested node, NULL on parameter issue
 node_t *clist_core_locate(const clist_t *const clist, const size_t position);
@@ -196,9 +196,10 @@ inline node_t *clist_core_allocate_single(const size_t data_size) {
 
 // Does what it sounds like, inserts count objects from data_src after position
 // False on parameter or malloc failure
-bool clist_core_insert(clist_t *const clist, const clist_itr_t position, const size_t count, const size_t data_size, const void *data_src) {
+bool clist_core_insert(const clist_itr_t position, const size_t count, const void *data_src) {
     // well, at least the == can try to see if we're working in the right object
-    if (clist && position.root && position.next && position.root == clist && count && data_size && data_src) {
+    if (position.root && position.next && count && data_src) {
+        const size_t data_size = position.root->data_size;
         node_t **new_nodes = clist_core_allocate(count, data_size);
         if (new_nodes) {
             // We can no longer fail, woo!
@@ -206,7 +207,7 @@ bool clist_core_insert(clist_t *const clist, const clist_itr_t position, const s
 
             cur_ptr->next->prev = new_nodes[count - 1];
             cur_ptr->next = new_nodes[0];
-            clist->size += count;
+            position.root->size += count;
             // Linking complete, but the data's not there yet :/
 
             for (size_t i = 0; i < count; ++i, data_src = INCREMENT_VOID(data_src, data_size),
@@ -223,11 +224,12 @@ bool clist_core_insert(clist_t *const clist, const clist_itr_t position, const s
 
 // Extracts count objects from position, placing it in data_dest and removing the nodes
 // False on parameter error
-bool clist_core_extract(clist_t *const clist, const clist_itr_t position, const size_t count, void *data_dest);
+bool clist_core_extract(const clist_itr_t position, const size_t count, void *data_dest){
+}
 
 // Deconstructs count objects at position and removes the nodes.
 // False on parameter error
-bool clist_core_deconstruct(clist_t *const clist, const clist_itr_t position, const size_t count);
+bool clist_core_deconstruct(const clist_itr_t position, const size_t count);
 
 // Hunts down the requested node, NULL on parameter issue
 node_t *clist_core_locate(const clist_t *const clist, const size_t position);
