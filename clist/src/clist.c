@@ -3,11 +3,11 @@
 #include <stdint.h>
 
 typedef struct node {
-    node_t *prev, next; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
+    node_t *prev, *next; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
 } node_t;
 
 struct clist {
-    node_t *back, front; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
+    node_t *back, *front; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
     size_t size;
     size_t data_size;
     void (*destructor)(void *const);
@@ -15,7 +15,7 @@ struct clist {
 
 // it's a list. It benefits from an iterator. The number of functions just doubled. Ugh.
 struct clist_itr {
-    node_t *root, curr;
+    node_t *root, *curr;
 };
 
 // Since I can't scan my notes and attach it here...
