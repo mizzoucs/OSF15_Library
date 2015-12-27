@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8)
-project(dyn_list)
+project(clist)
 
 # Look, I know it's a bad name, especially considering the
 # list-who-shall-not-be-named is WAY more dynamic than this
@@ -30,13 +30,8 @@ set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
 set(CMAKE_BUILD_TYPE Debug)
 enable_testing()
 
-# This MUST be checked on the machine being installed on
-# This list WILL NOT work if this fails
-add_executeable(dyn_list_vital_check test/vital.c)
-add_test(teser dyn_list_vital_check)
-
-add_executable(dyn_list_tester test/tester.c)
-add_test(tester dyn_list_tester)
+add_executable(clist_tester test/tester.c)
+add_test(tester clist_tester)
 
 # testing like this just doesn't work well with what I have
 # since it's not written for CTest/Check

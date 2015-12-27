@@ -1,10 +1,12 @@
-#include "../include/dyn_list.h"
+#include "../include/clist.h"
+
+#include <stdint.h>
 
 typedef struct node {
     node_t *prev, next; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
 } node_t;
 
-struct dyn_list {
+struct clist {
     node_t *back, front; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
     size_t size;
     size_t data_size;
@@ -12,7 +14,7 @@ struct dyn_list {
 };
 
 // it's a list. It benefits from an iterator. The number of functions just doubled. Ugh.
-struct dyn_list_itr {
+struct clist_itr {
     node_t *root, curr;
 };
 
@@ -31,30 +33,24 @@ struct dyn_list_itr {
     (does that make this homo_list? It would be a better name than dyn_list...)
 */
 
-// #define DATA_POINTER(node_ptr) ((void *)((&(node_ptr->next)) + 1))
-// WOAH, this is WAY better. This removes the requirement that the node size be the sum of the parts
-// So, if node gets padded somehow, we'll avoid the disaster case of us just going crazy, but we will waste the padded space
-// ...but isn't padding meant to be wasted?
-#define DATA_POINTER(node_ptr) ((void *) ((node_ptr + 1))))
-
 
 // CORE FUNCTIONS. They are what they sound like, core functions.
 // They do intense checks, so if you're a thin wrapper, do only what needs to be done to construct your core call
 
-// Does what it sounds like, inserts count objects from data_src at position
+// Does what it sounds like, inserts count objects from data_src after position
 // False on parameter or malloc failure
-bool dyn_core_insert(dyn_list_t *const dyn_list, const size_t position, const size_t count, const void *const data_src);
+bool clist_core_insert(clist_t *const clist, const clist_itr_t position, const size_t count, const size_t data_size, const void *const data_src);
 
 // Extracts count objects from position, placing it in data_dest and removing the nodes
 // False on parameter error
-bool dyn_core_extract(dyn_list_t *const dyn_list, const size_t position, const size_t count, void *data_dest);
+bool clist_core_extract(clist_t *const clist, const clist_itr_t position, const size_t count, void *data_dest);
 
 // Deconstructs count objects at position and removes the nodes.
 // False on parameter error
-bool dyn_core_deconstruct(dyn_list_t *const dyn_list, const size_t position, const size_t count);
+bool clist_core_deconstruct(clist_t *const clist, const clist_itr_t position, const size_t count);
 
 // Hunts down the requested node, NULL on parameter issue
-node_t *dyn_core_locate(const dyn_list_t *const dyn_list, const size_t position);
+node_t *clist_core_locate(const clist_t *const clist, const size_t position);
 
 /*
     Considering hiding even dyn_core_locate down below, making EVERYTHING a thin wrapper to a dyn_core
@@ -70,28 +66,28 @@ node_t *dyn_core_locate(const dyn_list_t *const dyn_list, const size_t position)
 */
 
 // This should be the only creation function
-dyn_list_t *dyn_list_create(const size_t data_type_size, void (*destruct_func)(void *const)) {
-    dyn_list_t dyn_list = NULL;
+clist_t *clist_create(const size_t data_type_size, void (*destruct_func)(void *const)) {
+    clist_t clist = NULL;
     if (data_size) {
-        dyn_list = malloc(sizeof(dyn_list_t));
-        if (dyn_list) {
-            dyn_list->back = dyn_list;
-            dyn_list->front = dyn_list;
-            dyn_list->size = 0;
-            dyn_list->data_size = data_size;
-            dyn_list->destructor = destruct_func;
+        clist = malloc(sizeof(clist_t));
+        if (clist) {
+            clist->back = clist;
+            clist->front = clist;
+            clist->size = 0;
+            clist->data_size = data_size;
+            clist->destructor = destruct_func;
         }
     }
-    return dyn_list;
+    return clist;
 }
 
-dyn_list_t *dyn_list_import(const void *const data, const size_t count, const size_t data_type_size, void (*destruct_func)(void *)) {
-    dyn_list_t dyn_list = dyn_list_create(data_type_size, destruct_func);
-    if (dyn_list) {
-        if (dyn_core_insert(dyn_list, 0, count, data)) {
-            return dyn_list;
+clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size, void (*destruct_func)(void *)) {
+    clist_t clist = clist_create(data_type_size, destruct_func);
+    if (clist) {
+        if (dyn_core_insert(clist, 0, count, data)) {
+            return clist;
         }
-        dyn_list_destroy(dyn_list);
+        clist_destroy(clist);
     }
     return NULL;
 }
@@ -125,12 +121,12 @@ bool dyn_array_export(const dyn_array_t *const dyn_array, void *data) {
     }
 }
 
-void dyn_list_destroy(dyn_list_t *const dyn_list) {
-    if (dyn_list) {
-        dyn_core_deconstruct(dyn_list, dyn_list->size);
+void clist_destroy(clist_t *const clist) {
+    if (clist) {
+        dyn_core_deconstruct(clist, clist->size);
         // deconstruct only fails on NULL, or zero size
         // and neither of those are a threat to free
-        free(dyn_list);
+        free(clist);
     }
 }
 
@@ -143,14 +139,25 @@ void dyn_list_destroy(dyn_list_t *const dyn_list) {
 
 
 // Because nodes are getting weird and I love them
-#define NODE_CALLOC(data_size) ((node_t *)calloc(1, sizeof(node_t) + data_size))
+#define NODE_CALLOC(data_size) ((node_t *) calloc(1, sizeof(node_t) + (data_size)))
+
+// So, if node gets padded somehow, we'll avoid the disaster case of us just going crazy
+//  but we will waste the padded space ...but isn't padding meant to be wasted?
+#define DATA_POINTER(node_ptr) ((void *) ((((node_t *) (node_ptr)) + 1)))
+
+#define NODE_SET(node_ptr, data_ptr, data_size) (memcpy(DATA_POINTER(node_ptr), (data_ptr), (data_size)))
+
+#define NODE_GET(node_ptr, data_ptr, data_size) (memcpy((data_ptr), DATA_POINTER(node_ptr), (data_size)))
+
+// Such a pain
+#define INCREMENT_VOID(ptr, value) ((void *) (((uint8_t *) (ptr)) + value))
 
 // Returns an array of linked nodes of size count
 //  Ends of list are NULL!
 // Also, free the returned pointer when linked up
 // Null on param or malloc failure
 // Probably overkill if you're just creating one node
-node_t **dyn_core_allocate(const size_t count, const size_t data_size) {
+node_t **clist_core_allocate(const size_t count, const size_t data_size) {
     if (count && data_size) {
         node_t **node_array = calloc(count, sizeof(node_t *));
         if (node_array) {
@@ -182,14 +189,49 @@ node_t **dyn_core_allocate(const size_t count, const size_t data_size) {
     return NULL;
 }
 
-node_t *dyn_core_allocate_single(const size_t data_size) {
+// just use the macro?
+inline node_t *clist_core_allocate_single(const size_t data_size) {
     return NODE_CALLOC(data_size);
 }
 
-// Declared up top since core is gone
-//bool dyn_core_insert(dyn_list_t *const dyn_list, const size_t position, const size_t count, const void *const data_src);
-//bool dyn_core_extract(dyn_list_t *const dyn_list, const size_t position, const size_t count, void *data_dest);
-//bool dyn_core_deconstruct(dyn_list_t *const dyn_list, const size_t position, const size_t count);
+// Does what it sounds like, inserts count objects from data_src after position
+// False on parameter or malloc failure
+bool clist_core_insert(clist_t *const clist, const clist_itr_t position, const size_t count, const size_t data_size, const void *data_src) {
+    // well, at least the == can try to see if we're working in the right object
+    if (clist && position.root && position.next && position.root == clist && count && data_size && data_src) {
+        node_t **new_nodes = clist_core_allocate(count, data_size);
+        if (new_nodes) {
+            // We can no longer fail, woo!
+            node_t *cur_ptr = position.curr;
+
+            cur_ptr->next->prev = new_nodes[count - 1];
+            cur_ptr->next = new_nodes[0];
+            clist->size += count;
+            // Linking complete, but the data's not there yet :/
+
+            for (size_t i = 0; i < count; ++i, data_src = INCREMENT_VOID(data_src, data_size),
+                    cur_ptr = cur_ptr->next) {
+                NODE_SET(new_nodes[i], data_src, data_size);
+            }
+            free(new_nodes);
+            // Yay!
+            return true;
+        }
+    }
+    return false;
+}
+
+// Extracts count objects from position, placing it in data_dest and removing the nodes
+// False on parameter error
+bool clist_core_extract(clist_t *const clist, const clist_itr_t position, const size_t count, void *data_dest);
+
+// Deconstructs count objects at position and removes the nodes.
+// False on parameter error
+bool clist_core_deconstruct(clist_t *const clist, const clist_itr_t position, const size_t count);
+
+// Hunts down the requested node, NULL on parameter issue
+node_t *clist_core_locate(const clist_t *const clist, const size_t position);
+
 
 // DO NOT TOUCH
 // It will break all of your hopes, dreams, and data integrity if you use it wrong
@@ -198,9 +240,9 @@ node_t *dyn_core_allocate_single(const size_t data_size) {
 // ANYWAY, unlinks nodes begin and end from the list, correcting any and all links, decrements count,
 //  and then starts killing all nodes from begin to end. Count is just used to correct the size
 //  traversal is used to free everything. Destructor flag allows destructor override (for an extract, perhaps)
-void dyn_core_purge(dyn_list_t *const dyn_list, node_t *begin, node_t *end, const size_t count, const bool deconstruct) {
-    if (dyn_list && begin && end && count) {
-        dyn_list->size -= count;
+void dyn_core_purge(clist_t *const clist, node_t *begin, node_t *end, const size_t count, const bool deconstruct) {
+    if (clist && begin && end && count) {
+        clist->size -= count;
         // COUNT NOT VALID, LIST IN BAD STATE
         begin->prev->next = end->next;
         // BEGIN UNLINKED AND RE-ROUTED, LIST CANNOT BE BACK-TRAVERSED CORRECTLY, LIST IN BAD STATE
@@ -210,8 +252,8 @@ void dyn_core_purge(dyn_list_t *const dyn_list, node_t *begin, node_t *end, cons
         // Start killing unlinked nodes
         node_t *backup = begin->next;
         do {
-            if (dyn_list->destructor && deconstruct)
-                dyn_list->destructor(DATA_POINTER(begin));
+            if (clist->destructor && deconstruct)
+                clist->destructor(DATA_POINTER(begin));
             free(begin);
             begin = backup;
             backup = begin->next;
@@ -221,23 +263,23 @@ void dyn_core_purge(dyn_list_t *const dyn_list, node_t *begin, node_t *end, cons
 }
 
 // returns node pointer of requested node, NULL on bad request
-node_t *dyn_core_locate(const dyn_list_t *const dyn_list, const size_t position) {
+node_t *dyn_core_locate(const clist_t *const clist, const size_t position) {
     node_t *itr = NULL;
-    if (dyn_list && position < dyn_list->size) {
+    if (clist && position < clist->size) {
         // Might be a bad idea
 
         // This could be done with a relative offset since front/back next/prev are the same offsets
         // instead of two loops.
         // EX: offset = front_half ? 1 : 0
-        // itr = ((node_t*)dyn_list)[offset]
+        // itr = ((node_t*)clist)[offset]
         // for(distance = front_half? position : size - position;distance;distance--)
         // itr = ((node_t*)itr)[offset]
         // In a perfect world where I have time to do things, I'd test which is better
         // Becuse that sounds neat, but that indexing sounds expensive vs a direct lookup
         // Screw it, let's do something cool.
 
-        int offset = (position <= dyn_list->size >> 1) ? 1 : 0;
-        itr = ((node_t **)dyn_list)[offset]; // itr is now either front or back node
+        int offset = (position <= clist->size >> 1) ? 1 : 0;
+        itr = ((node_t **)clist)[offset]; // itr is now either front or back node
         for (size_t distance = offset ? position : size - position - 1;
                 distance;
                 --distance) {
@@ -245,8 +287,8 @@ node_t *dyn_core_locate(const dyn_list_t *const dyn_list, const size_t position)
         }
 
         /*
-            if (position <= (dyn_list->size >> 1)) { // Request for the front half
-                itr = dyn_list->back;
+            if (position <= (clist->size >> 1)) { // Request for the front half
+                itr = clist->back;
                 for(size_t distance = position)
             } else { // Request for the back half
 

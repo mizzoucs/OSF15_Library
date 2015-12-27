@@ -21,7 +21,7 @@ add_subdirectory(dyn_array)
 
 add_subdirectory(bitmap)
 
-add_subdirectory(dyn_list)
+add_subdirectory(clist)
 
 # My hero http://stackoverflow.com/a/16404000
 
