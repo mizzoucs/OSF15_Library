@@ -9,8 +9,8 @@ typedef struct node {
 struct clist {
     node_t *back, *front; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
     size_t size;
-    size_t data_size;
-    void (*destructor)(void *const);
+    const size_t data_size;
+    void (*const destructor)(void *const);
 };
 
 // it's a list. It benefits from an iterator. The number of functions just doubled. Ugh.
@@ -66,7 +66,7 @@ node_t *clist_core_locate(const clist_t *const clist, const size_t position);
 */
 
 // This should be the only creation function
-clist_t *clist_create(const size_t data_type_size, void (*destruct_func)(void *const)) {
+clist_t *clist_create(const size_t data_type_size, void (*const destruct_func)(void *const)) {
     clist_t clist = NULL;
     if (data_size) {
         clist = malloc(sizeof(clist_t));
@@ -74,17 +74,19 @@ clist_t *clist_create(const size_t data_type_size, void (*destruct_func)(void *c
             clist->back = clist;
             clist->front = clist;
             clist->size = 0;
-            clist->data_size = data_size;
-            clist->destructor = destruct_func;
+            // clist->data_size = data_size;
+            memset(&clist->data_size, &data_type_size, sizeof(clist->data_size));
+            // clist->destructor = destruct_func;
+            memcpy(&clist->destructor, &destruct_func, sizeof(clist->destructor));
         }
     }
     return clist;
 }
 
-clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size, void (*destruct_func)(void *)) {
+clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size, void (*const destruct_func)(void *)) {
     clist_t clist = clist_create(data_type_size, destruct_func);
     if (clist) {
-        if (dyn_core_insert(clist, 0, count, data)) {
+        if (dyn_core_insert({clist,clist}, count, data)) {
             return clist;
         }
         clist_destroy(clist);
@@ -203,7 +205,7 @@ bool clist_core_insert(const clist_itr_t position, const size_t count, const voi
         node_t **new_nodes = clist_core_allocate(count, data_size);
         if (new_nodes) {
             // We can no longer fail, woo!
-            node_t *cur_ptr = position.curr;
+            node_t *cur_ptr = position.curr; // Deconst issue?
 
             cur_ptr->next->prev = new_nodes[count - 1];
             cur_ptr->next = new_nodes[0];
@@ -224,7 +226,8 @@ bool clist_core_insert(const clist_itr_t position, const size_t count, const voi
 
 // Extracts count objects from position, placing it in data_dest and removing the nodes
 // False on parameter error
-bool clist_core_extract(const clist_itr_t position, const size_t count, void *data_dest){
+bool clist_core_extract(const clist_itr_t position, const size_t count, void *data_dest) {
+    // Position + count vs iterators begin & end ???
 }
 
 // Deconstructs count objects at position and removes the nodes.
