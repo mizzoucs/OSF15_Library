@@ -35,7 +35,7 @@ struct dyn_list_itr {
 // WOAH, this is WAY better. This removes the requirement that the node size be the sum of the parts
 // So, if node gets padded somehow, we'll avoid the disaster case of us just going crazy, but we will waste the padded space
 // ...but isn't padding meant to be wasted?
-#define DATA_POINTER(node_ptr) (void *) ((node_ptr + 1)))
+#define DATA_POINTER(node_ptr) ((void *) ((node_ptr + 1))))
 
 
 // CORE FUNCTIONS. They are what they sound like, core functions.
@@ -143,38 +143,75 @@ void dyn_list_destroy(dyn_list_t *const dyn_list) {
 
 
 // Because nodes are getting weird and I love them
-#define NODE_MALLOC(data_size) malloc(sizeof(node_t) + data_size)
+#define NODE_CALLOC(data_size) ((node_t *)calloc(1, sizeof(node_t) + data_size))
 
 // Returns an array of linked nodes of size count
-// Remember to set the pref of the front and next of the back
+//  Ends of list are NULL!
 // Also, free the returned pointer when linked up
 // Null on param or malloc failure
 // Probably overkill if you're just creating one node
-node_t **dyn_core_allocate(const size_t count, const size_t data_size);
+node_t **dyn_core_allocate(const size_t count, const size_t data_size) {
+    if (count && data_size) {
+        node_t **node_array = calloc(count, sizeof(node_t *));
+        if (node_array) {
+            bool alloc_complete = true;
+            for (size_t i = 0; i < count && alloc_complete; ++i) {
+                node_array[i] = NODE_CALLOC(data_size);
+                // Should be perfectly safe
+                alloc_complete = node_array[i];
+            }
+            if (alloc_complete) {
+                // Process them! Because I'm laaazy.
+                for (size_t i = 0; i < (count - 1); ++i) {
+                    node_array[i]->next = node_array[i + 1];
+                }
+                // Did I mention I'm lazy?
+                for (size_t i = count - 1; i > 0; --i) {
+                    node_array[i]->prev = node_array[i - 1];
+                }
+                // That's all for this version!
+                return node_array;
+            }
+            // Loop of sadness
+            for (size_t i = 0; i < count && node_array[i]; ++i) {
+                free(node_array[i]);
+            }
+            free(node_array);
+        }
+    }
+    return NULL;
+}
+
+node_t *dyn_core_allocate_single(const size_t data_size) {
+    return NODE_CALLOC(data_size);
+}
 
 // Declared up top since core is gone
 //bool dyn_core_insert(dyn_list_t *const dyn_list, const size_t position, const size_t count, const void *const data_src);
 //bool dyn_core_extract(dyn_list_t *const dyn_list, const size_t position, const size_t count, void *data_dest);
 //bool dyn_core_deconstruct(dyn_list_t *const dyn_list, const size_t position, const size_t count);
 
-// DO NOT TOUCH IF YOU ARE NOT CORE EXTRACT OR DECONSTRUCT
+// DO NOT TOUCH
 // It will break all of your hopes, dreams, and data integrity if you use it wrong
 // It doesn't even check if these objects are all in the same list
-// This is meant to be a speedy helper
-// DO NOT TOUCH
 // YOU HAVE BEEN WARNED
-
 // ANYWAY, unlinks nodes begin and end from the list, correcting any and all links, decrements count,
-//  and then starts killing all nodes from begin to end
-void dyn_core_purge(dyn_list_t *const dyn_list, node_t *begin, node_t *end, const size_t count) {
+//  and then starts killing all nodes from begin to end. Count is just used to correct the size
+//  traversal is used to free everything. Destructor flag allows destructor override (for an extract, perhaps)
+void dyn_core_purge(dyn_list_t *const dyn_list, node_t *begin, node_t *end, const size_t count, const bool deconstruct) {
     if (dyn_list && begin && end && count) {
-        dyn_list->size -= count; // COUNT = CORRECTED, LIST IN BAD STATE
-        begin->prev->next = end->next; // BEGIN UNLINKED AND RE-ROUTED, LIST CANNOT BE BACK-TRAVERSED CORRECTLY, LIST IN BAD STATE
-        end->next->prev = begin->prev; // END UNLINKED AND RE-ROUTED, LIST IN GOOD STATE
+        dyn_list->size -= count;
+        // COUNT NOT VALID, LIST IN BAD STATE
+        begin->prev->next = end->next;
+        // BEGIN UNLINKED AND RE-ROUTED, LIST CANNOT BE BACK-TRAVERSED CORRECTLY, LIST IN BAD STATE
+        end->next->prev = begin->prev;
+        // END UNLINKED AND RE-ROUTED, LIST IN GOOD STATE
 
         // Start killing unlinked nodes
         node_t *backup = begin->next;
         do {
+            if (dyn_list->destructor && deconstruct)
+                dyn_list->destructor(DATA_POINTER(begin));
             free(begin);
             begin = backup;
             backup = begin->next;
