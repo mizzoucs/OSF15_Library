@@ -52,6 +52,10 @@ bool clist_core_deconstruct(const clist_itr_t position, const size_t count);
 // Hunts down the requested node, NULL on parameter issue
 node_t *clist_core_locate(const clist_t *const clist, const size_t position);
 
+// Returns an iterator to position + count, zero'd struct on failure
+//  Fails if traversal reaches the list root (or if given position is root)
+clist_itr_t clist_core_range_find(clist_itr_t position, const size_t count);
+
 /*
     Considering hiding even dyn_core_locate down below, making EVERYTHING a thin wrapper to a dyn_core
     But the complex functions (sort, prune, map/transform) would end up just being a wrapper of the dyn_core version
@@ -86,7 +90,7 @@ clist_t *clist_create(const size_t data_type_size, void (*const destruct_func)(v
 clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size, void (*const destruct_func)(void *)) {
     clist_t clist = clist_create(data_type_size, destruct_func);
     if (clist) {
-        if (dyn_core_insert({clist,clist}, count, data)) {
+        if (dyn_core_insert({clist, clist}, count, data)) {
             return clist;
         }
         clist_destroy(clist);
@@ -232,7 +236,37 @@ bool clist_core_extract(const clist_itr_t position, const size_t count, void *da
 
 // Deconstructs count objects at position and removes the nodes.
 // False on parameter error
-bool clist_core_deconstruct(const clist_itr_t position, const size_t count);
+bool clist_core_deconstruct(const clist_itr_t position, const size_t count) {
+    if (position.root && position.curr && count) {
+        // find links to fix, decrement count, start murdering nodes
+        clist_itr_t end_node
+
+    }
+}
+
+
+// Returns an iterator to position + count (the node to relink on a node op)
+//  NULL'd struct on failure
+// Fails if position + count is past root, count is zero, or position points at root
+clist_itr_t clist_core_range_find(clist_itr_t position, const size_t count) {
+    // Forbid count of zero because it could lead to very bad/confusing things
+    // So if you got to here with a count of zero, we'll catch it.
+    bool valid = count && position.root != position.curr;
+    for (size_t i = 0; i < (count - 1) && valid; ++i) {
+        position.curr = position.curr->next;
+        // No need to check prev state since it MUST be true
+        valid = position.root != position.curr;
+    }
+    // Annoying edge case, end is root because we want the last N
+    // So we have to do N-1 hops above and N here
+    if (valid) {
+        position.curr = position.curr->next;
+        return positon;
+    }
+    // Can't just return {NULL, NULL}, but if you cast it, it's fine
+    // C types!
+    return (clist_itr_t) {NULL, NULL};
+}
 
 // Hunts down the requested node, NULL on parameter issue
 node_t *clist_core_locate(const clist_t *const clist, const size_t position);
