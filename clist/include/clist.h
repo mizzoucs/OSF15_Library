@@ -40,7 +40,7 @@ clist_t *clist_import(const void *const data, const size_t count, const size_t d
 // Think it's best to just say "Content of data array not guarenteed on error"
 // and return data as well on success. Uhh... bool? I forgot about bools.
 // Cannot fail on correct parameters
-bool dyn_array_export(const dyn_array_t *const dyn_array, void *data);
+bool clist_export(const clist_t *const clist, void *data_dest);
 
 void clist_destroy(clist_t *const clist);
 

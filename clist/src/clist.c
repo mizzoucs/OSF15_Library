@@ -34,6 +34,18 @@ struct clist_itr {
 */
 
 
+// So, if node gets padded somehow, we'll avoid the disaster case of us just going crazy
+//  but we will waste the padded space ...but isn't padding meant to be wasted?
+#define DATA_POINTER(node_ptr) ((void *) ((((node_t *) (node_ptr)) + 1)))
+
+#define NODE_SET(node_ptr, data_ptr, data_size) (memcpy(DATA_POINTER(node_ptr), (data_ptr), (data_size)))
+
+#define NODE_GET(node_ptr, data_ptr, data_size) (memcpy((data_ptr), DATA_POINTER(node_ptr), (data_size)))
+
+// Such a pain
+#define INCREMENT_VOID(ptr, value) ((void *) (((uint8_t *) (ptr)) + value))
+
+
 // CORE FUNCTIONS. They are what they sound like, core functions.
 // They do intense checks, so if you're a thin wrapper, do only what needs to be done to construct your core call
 
@@ -55,19 +67,6 @@ node_t *clist_core_locate(const clist_t *const clist, const size_t position);
 // Returns an iterator to position + count, zero'd struct on failure
 //  Fails if traversal reaches the list root (or if given position is root)
 clist_itr_t clist_core_range_find(clist_itr_t position, const size_t count);
-
-/*
-    Considering hiding even dyn_core_locate down below, making EVERYTHING a thin wrapper to a dyn_core
-    But the complex functions (sort, prune, map/transform) would end up just being a wrapper of the dyn_core version
-        Which seems like a dumb level of indirection
-
-    So, for now, just call DATA_POINTER on the locate... once you've checked locate didn't NULL on you
-        Maybe a locate_data would be better, even if it's just sticking the two together (inline!)
-        So what's better, a function call to a function call, or duplicate functions? Ugh, neither?
-
-    // Hunts down the data pointer at the requested node, NULL on parameter issue
-    void *dyn_core_locate_data(const dyn_list_t *const dyn_list, const size_t position);
-*/
 
 // This should be the only creation function
 clist_t *clist_create(const size_t data_type_size, void (*const destruct_func)(void *const)) {
@@ -98,33 +97,21 @@ clist_t *clist_import(const void *const data, const size_t count, const size_t d
     return NULL;
 }
 
-
-bool dyn_array_export(const dyn_array_t *const dyn_array, void *data) {
-    // Uhh, I guess this counts as a "complex" function since dyn_core can't really save us here
-    //   Unless we extract, killing the list, and then do an import and an insert, haha
-    if (dyn_array && data && dyn_array->size) {
-        // extra statement? Yes, but it allows the compiler to make (valid) assumptions
-        //  But we have optimizations off anyway... That should be changed for "working" libraries
-        // TODO: Tinker with optimizations in the libraries, only have the testers be O0'd?
-        /*
-            Whoops, just realized dyn_array is const'd. This shouldn't be needed?
-            TODO: Check assembly for const optimization on loop condition
-            const size_t size = dyn_array->size;
-            const size_t data_size = dyn_array->data_size;
-        */
-        // Ok, what do? make data a uint8_t or leave it void?
-        // Having it be void is nice because who cares about the type
-        // But having it be a byte is nice because pointer math on void is a no-no and that's annoying as hell
-        // and having a duplicate pointer that is just it but casted is dumb
-        // DECISION: Implicit casting to void isn't a warning, but implicit casting of something to something else is
-        // Hell, I mght just make a macro that increments a void pointer by n bytes
-        node_t *itr = dyn_array->front;
-        for (size_t count = 0; count < size; ++count,
-                data = (void *)(((uint8_t *)data) + dyn_array->data_size), // THIS IS DUMB AND I HATE IT >:C
-                itr = itr->next) {
-            memcpy(data, DATA_POINTER(itr), dyn_array->data_size);
+// simple serialization
+// dump the work onto for_each?????? (too much jumping around?)
+bool clist_export(const clist_t *const clist, void *data_dest) {
+    // there's not mcuh that can go wrong without the list being totally broken
+    if (clist && clist->size) {
+        clist_itr_t itr = {clist, clist->front};
+        const size_t data_size = itr.root->data_size;
+        while (itr.root != itr.curr) {
+            NODE_GET(itr.curr, data_dest, data_size);
+            data_dest = INCREMENT_VOID(data_dest, data_size);
+            itr.curr = itr.curr->next;
         }
+        return true;
     }
+    return false;
 }
 
 void clist_destroy(clist_t *const clist) {
@@ -146,17 +133,6 @@ void clist_destroy(clist_t *const clist) {
 
 // Because nodes are getting weird and I love them
 #define NODE_CALLOC(data_size) ((node_t *) calloc(1, sizeof(node_t) + (data_size)))
-
-// So, if node gets padded somehow, we'll avoid the disaster case of us just going crazy
-//  but we will waste the padded space ...but isn't padding meant to be wasted?
-#define DATA_POINTER(node_ptr) ((void *) ((((node_t *) (node_ptr)) + 1)))
-
-#define NODE_SET(node_ptr, data_ptr, data_size) (memcpy(DATA_POINTER(node_ptr), (data_ptr), (data_size)))
-
-#define NODE_GET(node_ptr, data_ptr, data_size) (memcpy((data_ptr), DATA_POINTER(node_ptr), (data_size)))
-
-// Such a pain
-#define INCREMENT_VOID(ptr, value) ((void *) (((uint8_t *) (ptr)) + value))
 
 // Returns an array of linked nodes of size count
 //  Ends of list are NULL!
@@ -204,7 +180,7 @@ inline node_t *clist_core_allocate_single(const size_t data_size) {
 // False on parameter or malloc failure
 bool clist_core_insert(const clist_itr_t position, const size_t count, const void *data_src) {
     // well, at least the == can try to see if we're working in the right object
-    if (position.root && position.next && count && data_src) {
+    if (position.root && position.curr && count && data_src) {
         const size_t data_size = position.root->data_size;
         node_t **new_nodes = clist_core_allocate(count, data_size);
         if (new_nodes) {
