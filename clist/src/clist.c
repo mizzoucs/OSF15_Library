@@ -231,8 +231,42 @@ bool clist_core_insert(const clist_itr_t position, const size_t count, const voi
 // Extracts count objects from position, placing it in data_dest and removing the nodes
 // False on parameter error
 bool clist_core_extract(const clist_itr_t position, const size_t count, void *data_dest) {
-    // Position + count vs iterators begin & end ???
+    clist_itr_t end_node = clist_core_range_find(position, count); // deconst isue?
+    if (end_node.root) { // got a result
+        // Shouldn't fail past here?
 
+        // Now the good question is: Destruct loop THEN free
+        // or free AND destruct loop?
+        // two loops will be less jumps if the destructor ISN'T used
+        // since the whole loop is skipped
+        // But then we have to traverse twice
+        // But then it should be cached if there isn't a lot?
+        // Probably best to just do it in one go?
+
+        // relink and decrement count first
+        // then our workspace is segmented from the list
+
+        position.curr->prev.next = end_node.curr;
+        end_node.curr->prev = position.curr->prev;
+        position.root->size -= count;
+        // List is functional again!
+
+        const size_t data_size = position->root.size;
+
+        node_t *backup = position.curr->next;
+
+        for (size_t i = 0; i < count; ++i) {
+            NODE_GET(position.curr, data_dest, data_size);
+
+            data_size = INCREMENT_VOID(data_dest, data_size);
+
+            free(position.curr);
+            position.curr = backup;
+            backup = backup->next;
+        }
+        return true;
+    }
+    return false;
 }
 
 // Deconstructs count objects at position and removes the nodes.
