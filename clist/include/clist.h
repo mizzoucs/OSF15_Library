@@ -54,12 +54,12 @@ extract_back
 
 insert
 extract
-remove
+erase
 at
 
 itr_insert // insert at position, iterator does not change, prev of node does
 itr_extract // removes itr, position gets incremented
-itr_remove // removes itr, position gets incremented
+itr_erase // removes itr, position gets incremented
 itr_at // just returns pointer of itr'd data (rooted = NULL)
 
 itr_create // take list and desired position? itr_begin itr_end itr_at itr_create(rooted)?

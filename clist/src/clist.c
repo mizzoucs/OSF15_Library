@@ -51,7 +51,7 @@ struct clist_itr {
 
 // Does what it sounds like, inserts count objects from data_src after position
 // False on parameter or malloc failure
-bool clist_core_insert(const clist_itr_t position, const size_t count, const size_t data_size, const void *const data_src);
+bool clist_core_insert(const clist_itr_t position, const size_t count, const void *const data_src);
 
 // Extracts count objects from position, placing it in data_dest and removing the nodes
 // False on parameter error
@@ -122,6 +122,21 @@ void clist_destroy(clist_t *const clist) {
         free(clist);
     }
 }
+
+
+
+
+
+bool clist_push_front(clist_t *const clist, const void *const data) {
+    return clist_core_insert({clist, clist}, 1, data);
+}
+
+bool clist_pop_front(clist_t *const clist) {
+    return clist ? clist_core_deconstruct
+}
+bool clist_extract_front(clist_t *const clist, void *const data);
+
+
 
 
 //
@@ -203,6 +218,64 @@ bool clist_core_insert(const clist_itr_t position, const size_t count, const voi
     }
     return false;
 }
+
+
+// Modes are parameters, the rest are for grouping
+typedef enum {MODE_COPY = 0x01, MODE_EXTRACT = 0x03, MODE_ERASE = 0x02,
+              CLIST_EXFILTRATION = 0x01, CLIST_REMOVAL = 0x02
+             } clist_mode;
+
+// "moves" data, either extract, deconstruct, or range copy, based on mode
+// I'd call it remove, but a copy isn't a removal! Names are hard.
+// Mode isn't verified as a valid mode because there isn't a pretty way to do it
+bool clist_core_move(const clist_itr_t position, const size_t count, void *data_dest, const clist_mode mode) {
+    clist_itr_t end_node = clist_core_range_find(position, count); // deconst isue?
+    if (end_node.root && ((mode & CLIST_EXFILTRATION) ? data_dest : true)) { // got a result
+        // Shouldn't fail past here?
+
+        // relink and decrement count first
+        // then our workspace is segmented from the list
+
+        if (mode & CLIST_REMOVAL) { // can just do if(mode) but this is more explicit
+            position.curr->prev.next = end_node.curr;
+            end_node.curr->prev = position.curr->prev;
+            position.root->size -= count;
+            // List rerouted!
+        }
+
+        const size_t data_size = position->root.size;
+
+        node_t *backup = position.curr->next;
+        void (*const destructor)(void *const) = position.root->destructor;
+
+        // Separate loops?
+        // Make an array of all node pointers??????????
+        // HMMMMMMMM?????????
+        // clist_core_flatten? ???????????
+
+        for (size_t i = 0; i < count; ++i) {
+
+            if (mode & CLIST_EXFILTRATION) {
+                NODE_GET(position.curr, data_dest, data_size);
+
+                data_size = INCREMENT_VOID(data_dest, data_size);
+            }
+
+            if (mode & CLIST_REMOVAL) {
+                if (mode == MODE_ERASE && destructor) {
+                    destructor(DATA_POINTER(position.curr));
+                }
+                free(position.curr);                
+            }
+
+            position.curr = backup;
+            backup = backup->next;
+        }
+        return true;
+    }
+    return false;
+}
+
 
 // Extracts count objects from position, placing it in data_dest and removing the nodes
 // False on parameter error
