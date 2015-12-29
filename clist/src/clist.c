@@ -232,16 +232,49 @@ bool clist_core_insert(const clist_itr_t position, const size_t count, const voi
 // False on parameter error
 bool clist_core_extract(const clist_itr_t position, const size_t count, void *data_dest) {
     // Position + count vs iterators begin & end ???
+
 }
 
 // Deconstructs count objects at position and removes the nodes.
 // False on parameter error
 bool clist_core_deconstruct(const clist_itr_t position, const size_t count) {
-    if (position.root && position.curr && count) {
-        // find links to fix, decrement count, start murdering nodes
-        clist_itr_t end_node
+    // I just added a BUNCH of checks to range_find, so our input is good pending range_find
+    // if (position.root && position.curr && count) {
 
+    clist_itr_t end_node = clist_core_range_find(position, count); // deconst isue?
+    if (end_node.root) { // got a result
+        // Shouldn't fail past here?
+
+        // Now the good question is: Destruct loop THEN free
+        // or free AND destruct loop?
+        // two loops will be less jumps if the destructor ISN'T used
+        // since the whole loop is skipped
+        // But then we have to traverse twice
+        // But then it should be cached if there isn't a lot?
+        // Probably best to just do it in one go?
+
+        // relink and decrement count first
+        // then our workspace is segmented from the list
+
+        position.curr->prev.next = end_node.curr;
+        end_node.curr->prev = position.curr->prev;
+        position.root->size -= count;
+        // List is functional again!
+
+        node_t *backup = position.curr->next;
+        void (*const destructor)(void *const) = position.root->destructor;
+
+        for (size_t i = 0; i < count; ++i) {
+            if (destructor) {
+                destructor(DATA_POINTER(position.curr));
+            }
+            free(position.curr);
+            position.curr = backup;
+            backup = backup->next;
+        }
+        return true;
     }
+    return false;
 }
 
 
@@ -251,7 +284,12 @@ bool clist_core_deconstruct(const clist_itr_t position, const size_t count) {
 clist_itr_t clist_core_range_find(clist_itr_t position, const size_t count) {
     // Forbid count of zero because it could lead to very bad/confusing things
     // So if you got to here with a count of zero, we'll catch it.
-    bool valid = count && position.root != position.curr;
+
+    // Just throwing in a crapton of checks
+    bool valid = count && position.root && position.curr
+                 && position.root != position.curr
+                 && position.root->size && count <= position.root->size;
+
     for (size_t i = 0; i < (count - 1) && valid; ++i) {
         position.curr = position.curr->next;
         // No need to check prev state since it MUST be true
