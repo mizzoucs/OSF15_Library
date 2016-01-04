@@ -112,7 +112,7 @@ bool memcmp_fixed(const uint8_t *const data, uint8_t fixed_value, size_t nbytes)
 int for_each_counter = 0;
 
 void for_each_test(size_t bit_num, void *value) {
-    for_each_counter += bit_num + (*((size_t *)value));
+    for_each_counter += bit_num + (*((size_t *) value));
 }
 
 void bitmap_test_a();
@@ -122,7 +122,6 @@ void bitmap_test_b();
 void bitmap_test_c();
 
 int main() {
-
     // EVERYTHING ELSE
     bitmap_test_a();
 
@@ -145,7 +144,7 @@ void bitmap_test_a() {
     // INIT/DESTRUCT to get them out of the way
     // 20
     assert(bitmap_A = bitmap_create(test_bit_count));
-    assert(bitmap_A->data); // Can't do much with this...
+    assert(bitmap_A->data);  // Can't do much with this...
     assert(bitmap_A->bit_count == test_bit_count);
     assert(bitmap_A->byte_count == test_byte_count);
     // (also 16)
@@ -238,100 +237,100 @@ void bitmap_test_a() {
     // and throwing in the AT/TEST tests (7, 8, 9)
 
     // 4 & 7
-    //assert(bitmap_at(bitmap_A, 15));
+    // assert(bitmap_at(bitmap_A, 15));
     assert(bitmap_test(bitmap_A, 15));
     bitmap_reset(bitmap_A, 15);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x7F);
-    //assert(bitmap_at(bitmap_A, 15) == false);
+    // assert(bitmap_at(bitmap_A, 15) == false);
     assert(bitmap_test(bitmap_A, 15) == false);
 
-    //assert(bitmap_at(bitmap_A, 14));
+    // assert(bitmap_at(bitmap_A, 14));
     assert(bitmap_test(bitmap_A, 14));
     bitmap_reset(bitmap_A, 14);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x3F);
-    //assert(bitmap_at(bitmap_A, 14) == false);
+    // assert(bitmap_at(bitmap_A, 14) == false);
     assert(bitmap_test(bitmap_A, 14) == false);
 
-    //assert(bitmap_at(bitmap_A, 13));
+    // assert(bitmap_at(bitmap_A, 13));
     assert(bitmap_test(bitmap_A, 13));
     bitmap_reset(bitmap_A, 13);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x1F);
-    //assert(bitmap_at(bitmap_A, 13) == false);
+    // assert(bitmap_at(bitmap_A, 13) == false);
     assert(bitmap_test(bitmap_A, 13) == false);
 
-    //assert(bitmap_at(bitmap_A, 12));
+    // assert(bitmap_at(bitmap_A, 12));
     assert(bitmap_test(bitmap_A, 12));
     bitmap_reset(bitmap_A, 12);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x0F);
-    //assert(bitmap_at(bitmap_A, 12) == false);
+    // assert(bitmap_at(bitmap_A, 12) == false);
     assert(bitmap_test(bitmap_A, 12) == false);
 
-    //assert(bitmap_at(bitmap_A, 11));
+    // assert(bitmap_at(bitmap_A, 11));
     assert(bitmap_test(bitmap_A, 11));
     bitmap_reset(bitmap_A, 11);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x07);
-    //assert(bitmap_at(bitmap_A, 11) == false);
+    // assert(bitmap_at(bitmap_A, 11) == false);
     assert(bitmap_test(bitmap_A, 11) == false);
 
-    //assert(bitmap_at(bitmap_A, 10));
+    // assert(bitmap_at(bitmap_A, 10));
     assert(bitmap_test(bitmap_A, 10));
     bitmap_reset(bitmap_A, 10);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x03);
-    //assert(bitmap_at(bitmap_A, 10) == false);
+    // assert(bitmap_at(bitmap_A, 10) == false);
     assert(bitmap_test(bitmap_A, 10) == false);
 
-    //assert(bitmap_at(bitmap_A, 9));
+    // assert(bitmap_at(bitmap_A, 9));
     assert(bitmap_test(bitmap_A, 9));
     bitmap_reset(bitmap_A, 9);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x01);
-    //assert(bitmap_at(bitmap_A, 9) == false);
+    // assert(bitmap_at(bitmap_A, 9) == false);
     assert(bitmap_test(bitmap_A, 9) == false);
 
-    //assert(bitmap_at(bitmap_A, 8));
+    // assert(bitmap_at(bitmap_A, 8));
     assert(bitmap_test(bitmap_A, 8));
     bitmap_reset(bitmap_A, 8);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 1, 0x00, test_byte_count - 2));
     assert(bitmap_A->data[0] == 0x01);
-    //assert(bitmap_at(bitmap_A, 8) == false);
+    // assert(bitmap_at(bitmap_A, 8) == false);
     assert(bitmap_test(bitmap_A, 8) == false);
 
     // 6 & 9
-    //assert(bitmap_at(bitmap_A, test_bit_count - 1));
+    // assert(bitmap_at(bitmap_A, test_bit_count - 1));
     assert(bitmap_test(bitmap_A, test_bit_count - 1));
     bitmap_reset(bitmap_A, test_bit_count - 1);
     assert(bitmap_A->data[0] == 0x01);
     assert(memcmp_fixed(bitmap_A->data + 1, 0x00, test_byte_count - 1));
-    //assert(bitmap_at(bitmap_A, test_bit_count - 1) == false);
+    // assert(bitmap_at(bitmap_A, test_bit_count - 1) == false);
     assert(bitmap_test(bitmap_A, test_bit_count - 1) == false);
 
     // 5 & 8
-    //assert(bitmap_at(bitmap_A, 0));
+    // assert(bitmap_at(bitmap_A, 0));
     assert(bitmap_test(bitmap_A, 0));
     bitmap_reset(bitmap_A, 0);
     assert(memcmp_fixed(bitmap_A->data, 0x00, test_byte_count));
-    //assert(bitmap_at(bitmap_A, 0) == false);
+    // assert(bitmap_at(bitmap_A, 0) == false);
     assert(bitmap_test(bitmap_A, 0) == false);
 
     // AT/TEST and RESET tested and clear for unchecked use
@@ -398,100 +397,100 @@ void bitmap_test_a() {
     // FLIP BACK
 
     // 10
-    //assert(bitmap_at(bitmap_A, 15));
+    // assert(bitmap_at(bitmap_A, 15));
     assert(bitmap_test(bitmap_A, 15));
     bitmap_flip(bitmap_A, 15);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x7F);
-    //assert(bitmap_at(bitmap_A, 15) == false);
+    // assert(bitmap_at(bitmap_A, 15) == false);
     assert(bitmap_test(bitmap_A, 15) == false);
 
-    //assert(bitmap_at(bitmap_A, 14));
+    // assert(bitmap_at(bitmap_A, 14));
     assert(bitmap_test(bitmap_A, 14));
     bitmap_flip(bitmap_A, 14);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x3F);
-    //assert(bitmap_at(bitmap_A, 14) == false);
+    // assert(bitmap_at(bitmap_A, 14) == false);
     assert(bitmap_test(bitmap_A, 14) == false);
 
-    //assert(bitmap_at(bitmap_A, 13));
+    // assert(bitmap_at(bitmap_A, 13));
     assert(bitmap_test(bitmap_A, 13));
     bitmap_flip(bitmap_A, 13);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x1F);
-    //assert(bitmap_at(bitmap_A, 13) == false);
+    // assert(bitmap_at(bitmap_A, 13) == false);
     assert(bitmap_test(bitmap_A, 13) == false);
 
-    //assert(bitmap_at(bitmap_A, 12));
+    // assert(bitmap_at(bitmap_A, 12));
     assert(bitmap_test(bitmap_A, 12));
     bitmap_flip(bitmap_A, 12);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x0F);
-    //assert(bitmap_at(bitmap_A, 12) == false);
+    // assert(bitmap_at(bitmap_A, 12) == false);
     assert(bitmap_test(bitmap_A, 12) == false);
 
-    //assert(bitmap_at(bitmap_A, 11));
+    // assert(bitmap_at(bitmap_A, 11));
     assert(bitmap_test(bitmap_A, 11));
     bitmap_flip(bitmap_A, 11);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x07);
-    //assert(bitmap_at(bitmap_A, 11) == false);
+    // assert(bitmap_at(bitmap_A, 11) == false);
     assert(bitmap_test(bitmap_A, 11) == false);
 
-    //assert(bitmap_at(bitmap_A, 10));
+    // assert(bitmap_at(bitmap_A, 10));
     assert(bitmap_test(bitmap_A, 10));
     bitmap_flip(bitmap_A, 10);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x03);
-    //assert(bitmap_at(bitmap_A, 10) == false);
+    // assert(bitmap_at(bitmap_A, 10) == false);
     assert(bitmap_test(bitmap_A, 10) == false);
 
-    //assert(bitmap_at(bitmap_A, 9));
+    // assert(bitmap_at(bitmap_A, 9));
     assert(bitmap_test(bitmap_A, 9));
     bitmap_flip(bitmap_A, 9);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 2, 0x00, test_byte_count - 3));
     assert(bitmap_A->data[0] == 0x01);
     assert(bitmap_A->data[1] == 0x01);
-    //assert(bitmap_at(bitmap_A, 9) == false);
+    // assert(bitmap_at(bitmap_A, 9) == false);
     assert(bitmap_test(bitmap_A, 9) == false);
 
-    //assert(bitmap_at(bitmap_A, 8));
+    // assert(bitmap_at(bitmap_A, 8));
     assert(bitmap_test(bitmap_A, 8));
     bitmap_flip(bitmap_A, 8);
     assert(bitmap_A->data[test_byte_count - 1] == 0x02);
     assert(memcmp_fixed(bitmap_A->data + 1, 0x00, test_byte_count - 2));
     assert(bitmap_A->data[0] == 0x01);
-    //assert(bitmap_at(bitmap_A, 8) == false);
+    // assert(bitmap_at(bitmap_A, 8) == false);
     assert(bitmap_test(bitmap_A, 8) == false);
 
     // 12
-    //assert(bitmap_at(bitmap_A, test_bit_count - 1));
+    // assert(bitmap_at(bitmap_A, test_bit_count - 1));
     assert(bitmap_test(bitmap_A, test_bit_count - 1));
     bitmap_flip(bitmap_A, test_bit_count - 1);
     assert(bitmap_A->data[0] == 0x01);
     assert(memcmp_fixed(bitmap_A->data + 1, 0x00, test_byte_count - 1));
-    //assert(bitmap_at(bitmap_A, test_bit_count - 1) == false);
+    // assert(bitmap_at(bitmap_A, test_bit_count - 1) == false);
     assert(bitmap_test(bitmap_A, test_bit_count - 1) == false);
 
     // 11
-    //assert(bitmap_at(bitmap_A, 0));
+    // assert(bitmap_at(bitmap_A, 0));
     assert(bitmap_test(bitmap_A, 0));
     bitmap_flip(bitmap_A, 0);
     assert(memcmp_fixed(bitmap_A->data, 0x00, test_byte_count));
-    //assert(bitmap_at(bitmap_A, 0) == false);
+    // assert(bitmap_at(bitmap_A, 0) == false);
     assert(bitmap_test(bitmap_A, 0) == false);
 
     // FLIP tested and clear for unchecked use
@@ -622,9 +621,8 @@ void bitmap_test_c() {
     assert(bitmap_total_set(NULL) == 0);
 
     // 33
-    bitmap_destroy(bitmap_a); // should segfault if we free our overlay by accident
-    bitmap_a = bitmap_overlay(35,arr);
+    bitmap_destroy(bitmap_a);  // should segfault if we free our overlay by accident
+    bitmap_a = bitmap_overlay(35, arr);
     assert(bitmap_a);
     assert(bitmap_total_set(bitmap_a) == 35);
-
 }

@@ -5,6 +5,7 @@
 #include <string.h>
 #include "../src/dyn_array.c"
 
+// clang-format off
 /*
     dyn_array_t *dyn_array_create(size_t capacity, size_t data_type_size, void (*destruct_func)(void *));
         1. NORMAL, capacity 0, assert 16
@@ -187,14 +188,15 @@
         4. FAIL, null array
         5. FAIL, null func
 */
+// clang-format on
 
 // Shamelessly stolen from
 // http://pixelscommander.com/wp-content/uploads/2014/12/P10.pdf
 // modded a bit so it dies when false
 
-#define assert(e) ((e) ? (true) : \
-                   (fprintf(stderr,"%s,%d: assertion '%s' failed\n",__FILE__, __LINE__, #e), \
-                    fflush(stdout), abort()))
+#define assert(e) \
+    ((e) ? (true) \
+         : (fprintf(stderr, "%s,%d: assertion '%s' failed\n", __FILE__, __LINE__, #e), fflush(stdout), abort()))
 
 #define DATA_BLOCK_SIZE 100
 uint8_t DATA_BLOCKS[6][DATA_BLOCK_SIZE];
@@ -215,17 +217,17 @@ void block_destructor_mini(void *block) {
 int for_each_counter = 0;
 void block_for_each(void *const block, void *num) {
     if (num)
-        for_each_counter += *((int *)num);
+        for_each_counter += *((int *) num);
     else
         for_each_counter += 10;
 }
 
 int block_compare(const void *const a, const void *const b) {
-    return ((int)(((const uint8_t *)a)[0])) - (((const uint8_t *)b)[0]);
+    return ((int) (((const uint8_t *) a)[0])) - (((const uint8_t *) b)[0]);
 }
 
 int block_compare_inv(const void *const a, const void *const b) {
-    return ((int)(((const uint8_t *)b)[0])) - (((const uint8_t *)a)[0]);
+    return ((int) (((const uint8_t *) b)[0])) - (((const uint8_t *) a)[0]);
 }
 
 void init_data_blocks() {
@@ -719,7 +721,6 @@ void run_basic_tests_b() {
     destruct_counter = 0;
 
     // EXTRACT_BACK TESTS COMPLETE
-
 }
 
 // INSERT, EXTRACT, ERASE
@@ -932,7 +933,6 @@ void run_basic_tests_c() {
     dyn_array_destroy(dyn_a);
     dyn_array_destroy(dyn_b);
     destruct_counter = 0;
-
 }
 
 // EXTRACT, IMPORT
@@ -1033,7 +1033,6 @@ void run_basic_tests_d() {
 
 // SORT INSERT_SORTED
 void run_basic_tests_e() {
-
     dyn_array_t *dyn_a = NULL;
 
     assert((dyn_a = dyn_array_create(0, DATA_BLOCK_SIZE, NULL)));
@@ -1043,19 +1042,19 @@ void run_basic_tests_e() {
 
     // INSERT_SORTED 1
     assert(dyn_array_insert_sorted(dyn_a, DATA_BLOCKS[0], &block_compare));
-    assert(((uint8_t *)dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[0][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[3][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[0][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[3][0]);
 
     assert(dyn_array_insert_sorted(dyn_a, DATA_BLOCKS[1], &block_compare));
-    assert(((uint8_t *)dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[0][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[1][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 2))[0] == DATA_BLOCKS[3][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[0][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[1][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 2))[0] == DATA_BLOCKS[3][0]);
 
     assert(dyn_array_insert_sorted(dyn_a, DATA_BLOCKS[5], &block_compare));
-    assert(((uint8_t *)dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[0][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[1][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 2))[0] == DATA_BLOCKS[3][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 3))[0] == DATA_BLOCKS[5][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[0][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[1][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 2))[0] == DATA_BLOCKS[3][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 3))[0] == DATA_BLOCKS[5][0]);
 
     // INSERT_SORTED 3
     assert(dyn_array_insert_sorted(NULL, DATA_BLOCKS[4], &block_compare) == false);
@@ -1071,17 +1070,17 @@ void run_basic_tests_e() {
     // SORT 1
     // (no actual change to data)
     assert(dyn_array_sort(dyn_a, &block_compare));
-    assert(((uint8_t *)dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[0][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[1][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 2))[0] == DATA_BLOCKS[3][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 3))[0] == DATA_BLOCKS[5][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[0][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[1][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 2))[0] == DATA_BLOCKS[3][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 3))[0] == DATA_BLOCKS[5][0]);
 
     // invert contents
     assert(dyn_array_sort(dyn_a, &block_compare_inv));
-    assert(((uint8_t *)dyn_array_at(dyn_a, 3))[0] == DATA_BLOCKS[0][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 2))[0] == DATA_BLOCKS[1][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[3][0]);
-    assert(((uint8_t *)dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[5][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 3))[0] == DATA_BLOCKS[0][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 2))[0] == DATA_BLOCKS[1][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 1))[0] == DATA_BLOCKS[3][0]);
+    assert(((uint8_t *) dyn_array_at(dyn_a, 0))[0] == DATA_BLOCKS[5][0]);
 
     // SORT 2
     dyn_array_clear(dyn_a);

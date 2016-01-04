@@ -2,11 +2,11 @@
 
 // Just the one for now. Indicates we're an overlay and should not free
 // (also, make sure that ALL is as wide as ll of the flags)
-typedef enum {NONE = 0x00, OVERLAY = 0x01, ALL = 0xFF} BITMAP_FLAGS;
+typedef enum { NONE = 0x00, OVERLAY = 0x01, ALL = 0xFF } BITMAP_FLAGS;
 
 struct bitmap {
-    unsigned leftover_bits; // Packing will increase this to an int anyway
-    BITMAP_FLAGS flags; // Generic place to store flags. Not enough flags to worry about width yet.
+    unsigned leftover_bits;  // Packing will increase this to an int anyway
+    BITMAP_FLAGS flags;      // Generic place to store flags. Not enough flags to worry about width yet.
     uint8_t *data;
     size_t bit_count, byte_count;
 };
@@ -20,13 +20,13 @@ struct bitmap {
 // lookup instead of always shifting bits. Should be faster? Confirmed: 10% faster
 // Also, using native int width because it should be faster as well? - Negligible/indeterminate
 //  Won't help until bitmap uses native width for the array
-const static uint8_t mask[8] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+const static uint8_t mask[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
 
 // Mask for all bits at index i and lower
 const static uint8_t mask_down_inclusive[8] = {0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
 
 // Inverted mask
-const static uint8_t invert_mask[8] = { 0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F};
+const static uint8_t invert_mask[8] = {0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F};
 
 // Way more testing than I should waste my time on suggested uint8_t was faster
 // but it may still be negligible/indeterminate.
@@ -36,10 +36,10 @@ const static uint8_t invert_mask[8] = { 0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF
 // Total bits set in the given byte in a handy lookup table
 // Macros, man...
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetTable
-#define B2(n) n,     n+1,     n+1,     n+2
-#define B4(n) B2(n), B2(n+1), B2(n+1), B2(n+2)
-#define B6(n) B4(n), B4(n+1), B4(n+1), B4(n+2)
-const static uint8_t bit_totals[256] = { B6(0), B6(1), B6(1), B6(2) };
+#define B2(n) n, n + 1, n + 1, n + 2
+#define B4(n) B2(n), B2(n + 1), B2(n + 1), B2(n + 2)
+#define B6(n) B4(n), B4(n + 1), B4(n + 1), B4(n + 2)
+const static uint8_t bit_totals[256] = {B6(0), B6(1), B6(1), B6(2)};
 #undef B6
 #undef B4
 #undef B2
@@ -83,7 +83,8 @@ void bitmap_invert(bitmap_t *const bitmap) {
 size_t bitmap_ffs(const bitmap_t *const bitmap) {
     if (bitmap) {
         size_t result = 0;
-        for (; result < bitmap->bit_count && !bitmap_test(bitmap, result); ++result) {}
+        for (; result < bitmap->bit_count && !bitmap_test(bitmap, result); ++result) {
+        }
         return (result == bitmap->bit_count ? SIZE_MAX : result);
     }
     return SIZE_MAX;
@@ -92,7 +93,8 @@ size_t bitmap_ffs(const bitmap_t *const bitmap) {
 size_t bitmap_ffz(const bitmap_t *const bitmap) {
     if (bitmap) {
         size_t result = 0;
-        for (; result < bitmap->bit_count && bitmap_test(bitmap, result); ++result) {}
+        for (; result < bitmap->bit_count && bitmap_test(bitmap, result); ++result) {
+        }
         return (result == bitmap->bit_count ? SIZE_MAX : result);
     }
     return SIZE_MAX;
@@ -186,12 +188,12 @@ void bitmap_destroy(bitmap_t *bitmap) {
 //
 
 bitmap_t *bitmap_initialize(size_t n_bits, BITMAP_FLAGS flags) {
-    if (n_bits) { // must be non-zero
+    if (n_bits) {  // must be non-zero
         bitmap_t *bitmap = (bitmap_t *) malloc(sizeof(bitmap_t));
         if (bitmap) {
-            bitmap->flags = flags;
-            bitmap->bit_count = n_bits;
-            bitmap->byte_count = n_bits >> 3;
+            bitmap->flags         = flags;
+            bitmap->bit_count     = n_bits;
+            bitmap->byte_count    = n_bits >> 3;
             bitmap->leftover_bits = n_bits & 0x07;
             bitmap->byte_count += (bitmap->leftover_bits ? 1 : 0);
 
@@ -206,7 +208,7 @@ bitmap_t *bitmap_initialize(size_t n_bits, BITMAP_FLAGS flags) {
                 bitmap->data = NULL;
                 return bitmap;
             } else {
-                bitmap->data = (uint8_t *)calloc(bitmap->byte_count, 1);
+                bitmap->data = (uint8_t *) calloc(bitmap->byte_count, 1);
                 if (bitmap->data) {
                     return bitmap;
                 }
