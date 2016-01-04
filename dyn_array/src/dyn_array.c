@@ -10,7 +10,7 @@ struct dyn_array {
     // DYN_FLAGS flags;
     size_t capacity;
     size_t size;
-    size_t data_size;
+    const size_t data_size;
     void *array;
     void (*destructor)(void *);
 };
@@ -47,12 +47,17 @@ dyn_array_t *dyn_array_create(const size_t capacity, const size_t data_type_size
             size_t actual_capacity = 16;
             while (capacity > actual_capacity) {actual_capacity <<= 1;}
 
-            dyn_array->capacity = actual_capacity;
-            dyn_array->size = 0;
-            dyn_array->data_size = data_type_size;
-            dyn_array->destructor = destruct_func;
+            // dyn_array->capacity = actual_capacity;
+            // dyn_array->size = 0;
+            // dyn_array->data_size = data_type_size;
+            // dyn_array->destructor = destruct_func;
 
-            dyn_array->array = (uint8_t *) malloc(data_type_size * actual_capacity);
+            // dyn_array->array = malloc(data_type_size * actual_capacity);
+
+            // I had an idea... and it compiles
+            // const members of a malloc'd struct are so annoying
+            memcpy(dyn_array,&((dyn_array_t){actual_capacity,0,data_type_size, malloc(data_type_size * actual_capacity),destruct_func}),sizeof(dyn_array_t));
+
             if (dyn_array->array) {
                 // other malloc worked, yay!
                 // we're done?
