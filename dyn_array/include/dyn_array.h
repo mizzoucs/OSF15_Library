@@ -61,7 +61,7 @@ const void *dyn_array_export(const dyn_array_t *const dyn_array);
 
 ///
 /// Dynamic array destructor
-/// Applies destructor to all ramaining elements
+/// Applies destructor to all remaining elements
 /// \param byn_array The dynamic array to destruct
 ///
 void dyn_array_destroy(dyn_array_t *const dyn_array);
@@ -74,7 +74,7 @@ void dyn_array_destroy(dyn_array_t *const dyn_array);
 
 // All insertions/extractions are via memcpy, so giving us pointers overlapping ourselves is UNDEFINED
 // The logic behind this is that you shouldn't be giving us an internal pointer that overlaps because that's weird
-// If you need this functionality, then you should also know how to change the 2 (!) memcpys we use
+// and guarenteeing the safety of something like that is not worth the effort
 
 ///
 /// Returns a pointer to the object at the front of the array
