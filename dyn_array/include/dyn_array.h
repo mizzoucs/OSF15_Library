@@ -225,7 +225,7 @@ size_t dyn_array_data_size(const dyn_array_t *const dyn_array);
 /// \param compare the comparison function
 /// \return bool representing success of the operation
 ///
-bool dyn_array_sort(dyn_array_t *const dyn_array, int (*compare)(const void *, const void *));
+bool dyn_array_sort(dyn_array_t *const dyn_array, int (*const compare)(const void *, const void *));
 
 
 ///
@@ -239,7 +239,7 @@ bool dyn_array_sort(dyn_array_t *const dyn_array, int (*compare)(const void *, c
 /// \return bool representing success of the operation
 ///
 bool dyn_array_insert_sorted(dyn_array_t *const dyn_array, const void *const object,
-                             int (*compare)(const void *const, const void *const));
+                             int (*const compare)(const void *const, const void *const));
 
 
 ///
@@ -249,7 +249,7 @@ bool dyn_array_insert_sorted(dyn_array_t *const dyn_array, const void *const obj
 /// \param arg argument that will be passed to the function (as parameter 2)
 /// \return bool representing success of operation (really just pointer and size checks)
 ///
-bool dyn_array_for_each(dyn_array_t *const dyn_array, void (*func)(void *const, void *), void *arg);
+bool dyn_array_for_each(dyn_array_t *const dyn_array, void (*const func)(void *const, void *), void *arg);
 
 // clang-format off
 /*

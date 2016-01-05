@@ -221,7 +221,7 @@ size_t dyn_array_data_size(const dyn_array_t *const dyn_array) {
 
 
 
-bool dyn_array_sort(dyn_array_t *const dyn_array, int (*compare)(const void *, const void *)) {
+bool dyn_array_sort(dyn_array_t *const dyn_array, int (*const compare)(const void *, const void *)) {
     // hah, turns out there's a quicksort in cstdlib.
     // and it works exactly like we want it to
     if (dyn_array && dyn_array->size && compare) {
