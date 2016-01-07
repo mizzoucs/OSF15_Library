@@ -147,9 +147,17 @@ bool clist_extract_front(clist_t *const clist, void *const data) {
     return clist ? dyn_core_move({clist, clist->front}, 1, data, MODE_EXTRACT) : false;
 }
 
-bool clist_push_back(clist_t *const clist, const void *const data);
-bool pop_back(clist_t *const clist);
-bool extract_back(clist_t *const clist, void *const data);
+bool clist_push_back(clist_t *const clist, const void *const data) {
+    return clist ? dyn_core_insert({clist, clist->back}, 1, data) : false;
+}
+bool pop_back(clist_t *const clist) {
+    return clist ? dyn_core_deconstruct({clist, clist->back}, 1) : false;
+    return clist ? dyn_core_move({clist, clist->back}, 1, NULL, MODE_ERASE) : false;
+}
+bool extract_back(clist_t *const clist, void *const data) {
+    return clist ? dyn_core_extract({clist, clist->back}, 1) : false;
+    return clist ? dyn_core_move({clist, clist->back}, 1, data, MODE_EXTRACT) : false;
+}
 
 
 
