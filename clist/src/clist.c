@@ -93,12 +93,14 @@ clist_t *clist_create(const size_t data_type_size, void (*const destruct_func)(v
 
 clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size,
                       void (*const destruct_func)(void *)) {
-    clist_t clist = clist_create(data_type_size, destruct_func);
-    if (clist) {
-        if (dyn_core_insert({clist, clist}, count, data)) {
-            return clist;
+    if (data && count) {
+        clist_t *clist = clist_create(data_type_size, destruct_func);
+        if (clist) {
+            if (dyn_core_insert({clist, clist}, count, data)) {
+                return clist;
+            }
+            clist_destroy(clist);
         }
-        clist_destroy(clist);
     }
     return NULL;
 }
@@ -122,7 +124,7 @@ bool clist_export(const clist_t *const clist, void *data_dest) {
 
 void clist_destroy(clist_t *const clist) {
     if (clist) {
-        dyn_core_deconstruct(clist, clist->size);
+        dyn_core_deconstruct({clist, clist->front}, clist->size);
         // deconstruct only fails on NULL, or zero size
         // and neither of those are a threat to free
         free(clist);
@@ -133,13 +135,21 @@ void clist_destroy(clist_t *const clist) {
 
 
 bool clist_push_front(clist_t *const clist, const void *const data) {
-    return clist_core_insert({clist, clist}, 1, data);
+    return clist ? dyn_core_insert({clist, clist->front}, 1, data) : false;
 }
 
 bool clist_pop_front(clist_t *const clist) {
-    return clist ? clist_core_deconstruct
+    return clist ? dyn_core_deconstruct({clist, clist->front}, 1) : false;
+    return clist ? dyn_core_move({clist, clist->front}, 1, NULL, MODE_ERASE) : false;
 }
-bool clist_extract_front(clist_t *const clist, void *const data);
+bool clist_extract_front(clist_t *const clist, void *const data) {
+    return clist ? dyn_core_extract({clist, clist->front}, 1) : false;
+    return clist ? dyn_core_move({clist, clist->front}, 1, data, MODE_EXTRACT) : false;
+}
+
+bool clist_push_back(clist_t *const clist, const void *const data);
+bool pop_back(clist_t *const clist);
+bool extract_back(clist_t *const clist, void *const data);
 
 
 
@@ -266,7 +276,7 @@ bool clist_core_move(const clist_itr_t position, const size_t count, void *data_
             if (mode & CLIST_EXFILTRATION) {
                 NODE_GET(position.curr, data_dest, data_size);
 
-                data_size = INCREMENT_VOID(data_dest, data_size);
+                data_dest = INCREMENT_VOID(data_dest, data_size);
             }
 
             if (mode & CLIST_REMOVAL) {
