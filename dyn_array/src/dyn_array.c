@@ -83,17 +83,19 @@ dyn_array_t *dyn_array_create(const size_t capacity, const size_t data_type_size
 // Creates a dynamic array from a standard array
 dyn_array_t *dyn_array_import(const void *const data, const size_t count, const size_t data_type_size,
                               void (*destruct_func)(void *)) {
-    dyn_array_t *dyn_array = NULL;
     // literally could not give us an overlapping pointer unless they guessed it
     // I'd just do a memcpy here instead of dyn_shift, but the dyn_shift branch for this is
     // short. DYN_SHIFT CANNOT fail if create worked properly, but we'll cleanup if it did anyway
-    if (data && (dyn_array = dyn_array_create(count, data_type_size, destruct_func))) {
-        if (count && !dyn_shift_insert(dyn_array, 0, count, MODE_INSERT, data)) {
+    if (data && count) {
+        dyn_array_t *dyn_array = dyn_array_create(count, data_type_size, destruct_func);
+        if (dyn_array) {
+            if (dyn_shift_insert(dyn_array, 0, count, MODE_INSERT, data)) {
+                return dyn_array;
+            }
             dyn_array_destroy(dyn_array);
-            dyn_array = NULL;
         }
     }
-    return dyn_array;
+    return NULL;
 }
 
 // TODO: Change this?
