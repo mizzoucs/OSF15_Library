@@ -32,14 +32,6 @@ clist_t *clist_create(const size_t data_type_size, void (*destruct_func)(void *c
 // Ooooohhh I like that.
 clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size, void (*destruct_func)(void *));
 
-// uhh, return the given pointer if it worked completely? (or at least as far as we know)
-// Null if it didn't?
-// UHHHHHHHHH no real way to report "shit broke halfway through"
-// Or BAD POINTER
-// I am NOT adding another errno because ehhhhhhh
-// Think it's best to just say "Content of data array not guarenteed on error"
-// and return data as well on success. Uhh... bool? I forgot about bools.
-// Cannot fail on correct parameters
 bool clist_export(const clist_t *const clist, void *data_dest);
 
 void clist_destroy(clist_t *const clist);
@@ -48,9 +40,9 @@ bool clist_push_front(clist_t *const clist, const void *const data);
 bool clist_pop_front(clist_t *const clist);
 bool clist_extract_front(clist_t *const clist, void *const data);
 
-clist_push_back(clist_t *const clist, const void *const data);
-pop_back
-extract_back
+bool clist_push_back(clist_t *const clist, const void *const data);
+bool pop_back(clist_t *const clist);
+bool extract_back(clist_t *const clist, void *const data);
 
 insert
 extract

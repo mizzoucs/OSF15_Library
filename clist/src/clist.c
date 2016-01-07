@@ -3,14 +3,14 @@
 #include <stdint.h>
 
 typedef struct node {
-    node_t *prev, *next; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
+    node_t *prev, *next;  // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
 } node_t;
 
 struct clist {
-    node_t *back, *front; // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
+    node_t *back, *front;  // ORDER AND LOCATION IS VITAL, DO NOT REORDER THESE (make it an array of 2?)
     size_t size;
     const size_t data_size;
-    void (*const destructor)(void *const);
+    void (*destructor)(void *const);
 };
 
 // it's a list. It benefits from an iterator. The number of functions just doubled. Ugh.
@@ -20,15 +20,19 @@ struct clist_itr {
 
 // Since I can't scan my notes and attach it here...
 /*
-    Root connects to the two ends, BUT THE TWO ENDS ALSO CONNECT TO ROOT. It makes relinking faster, and NO LINK IS EVER NULL
+    Root connects to the two ends, BUT THE TWO ENDS ALSO CONNECT TO ROOT. It makes relinking faster, and NO LINK IS EVER
+   NULL
     Root, when empty, should point to itself at both ends. PREFER SIZE CHECK TO LINK CHECK
         Cores will prevent circular link issues with size checks before starting, complex functions should do the same
 
-    There is a VITAL test in the test folder. It will assert that the relative offset of root's back and front are the same
-    as the node relative offsets. This way, root can be cast to a node and not cause a freakout, and that the circular link is fine
+    There is a VITAL test in the test folder. It will assert that the relative offset of root's back and front are the
+   same
+    as the node relative offsets. This way, root can be cast to a node and not cause a freakout, and that the circular
+   link is fine
     // TODO: Find a way to force cmake to run this test on install
 
-    Not going to store the size and destructor in the nodes because that's a major waste of space, though it is a little more restrictive
+    Not going to store the size and destructor in the nodes because that's a major waste of space, though it is a little
+   more restrictive
     The list-who-shall-not-be-named (hetero_list) will be interesting and allow varying size and destructors
     (does that make this homo_list? It would be a better name than dyn_list...)
 */
@@ -74,19 +78,21 @@ clist_t *clist_create(const size_t data_type_size, void (*const destruct_func)(v
     if (data_size) {
         clist = malloc(sizeof(clist_t));
         if (clist) {
-            clist->back = clist;
-            clist->front = clist;
-            clist->size = 0;
+            memcpy(clist, &((clist_t){clist, clist, 0, data_type_size, destruct_func}), sizeof(clist_t));
+            // clist->back = clist;
+            // clist->front = clist;
+            // clist->size = 0;
             // clist->data_size = data_size;
-            memset(&clist->data_size, &data_type_size, sizeof(clist->data_size));
+            // memset(&clist->data_size, &data_type_size, sizeof(clist->data_size));
             // clist->destructor = destruct_func;
-            memcpy(&clist->destructor, &destruct_func, sizeof(clist->destructor));
+            // memcpy(&clist->destructor, &destruct_func, sizeof(clist->destructor));
         }
     }
     return clist;
 }
 
-clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size, void (*const destruct_func)(void *)) {
+clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size,
+                      void (*const destruct_func)(void *)) {
     clist_t clist = clist_create(data_type_size, destruct_func);
     if (clist) {
         if (dyn_core_insert({clist, clist}, count, data)) {
@@ -102,12 +108,12 @@ clist_t *clist_import(const void *const data, const size_t count, const size_t d
 bool clist_export(const clist_t *const clist, void *data_dest) {
     // there's not mcuh that can go wrong without the list being totally broken
     if (clist && clist->size) {
-        clist_itr_t itr = {clist, clist->front};
+        clist_itr_t itr        = {clist, clist->front};
         const size_t data_size = itr.root->data_size;
         while (itr.root != itr.curr) {
             NODE_GET(itr.curr, data_dest, data_size);
             data_dest = INCREMENT_VOID(data_dest, data_size);
-            itr.curr = itr.curr->next;
+            itr.curr  = itr.curr->next;
         }
         return true;
     }
@@ -122,7 +128,6 @@ void clist_destroy(clist_t *const clist) {
         free(clist);
     }
 }
-
 
 
 
@@ -200,15 +205,15 @@ bool clist_core_insert(const clist_itr_t position, const size_t count, const voi
         node_t **new_nodes = clist_core_allocate(count, data_size);
         if (new_nodes) {
             // We can no longer fail, woo!
-            node_t *cur_ptr = position.curr; // Deconst issue?
+            node_t *cur_ptr = position.curr;  // Deconst issue?
 
             cur_ptr->next->prev = new_nodes[count - 1];
-            cur_ptr->next = new_nodes[0];
+            cur_ptr->next       = new_nodes[0];
             position.root->size += count;
             // Linking complete, but the data's not there yet :/
 
-            for (size_t i = 0; i < count; ++i, data_src = INCREMENT_VOID(data_src, data_size),
-                    cur_ptr = cur_ptr->next) {
+            for (size_t i = 0; i < count;
+                 ++i, data_src = INCREMENT_VOID(data_src, data_size), cur_ptr = cur_ptr->next) {
                 NODE_SET(new_nodes[i], data_src, data_size);
             }
             free(new_nodes);
@@ -221,24 +226,28 @@ bool clist_core_insert(const clist_itr_t position, const size_t count, const voi
 
 
 // Modes are parameters, the rest are for grouping
-typedef enum {MODE_COPY = 0x01, MODE_EXTRACT = 0x03, MODE_ERASE = 0x02,
-              CLIST_EXFILTRATION = 0x01, CLIST_REMOVAL = 0x02
-             } clist_mode;
+typedef enum {
+    MODE_COPY          = 0x01,
+    MODE_EXTRACT       = 0x03,
+    MODE_ERASE         = 0x02,
+    CLIST_EXFILTRATION = 0x01,
+    CLIST_REMOVAL      = 0x02
+} clist_mode;
 
 // "moves" data, either extract, deconstruct, or range copy, based on mode
 // I'd call it remove, but a copy isn't a removal! Names are hard.
 // Mode isn't verified as a valid mode because there isn't a pretty way to do it
 bool clist_core_move(const clist_itr_t position, const size_t count, void *data_dest, const clist_mode mode) {
-    clist_itr_t end_node = clist_core_range_find(position, count); // deconst isue?
-    if (end_node.root && ((mode & CLIST_EXFILTRATION) ? data_dest : true)) { // got a result
+    clist_itr_t end_node = clist_core_range_find(position, count);            // deconst isue?
+    if (end_node.root && ((mode & CLIST_EXFILTRATION) ? data_dest : true)) {  // got a result
         // Shouldn't fail past here?
 
         // relink and decrement count first
         // then our workspace is segmented from the list
 
-        if (mode & CLIST_REMOVAL) { // can just do if(mode) but this is more explicit
+        if (mode & CLIST_REMOVAL) {  // can just do if(mode) but this is more explicit
             position.curr->prev.next = end_node.curr;
-            end_node.curr->prev = position.curr->prev;
+            end_node.curr->prev      = position.curr->prev;
             position.root->size -= count;
             // List rerouted!
         }
@@ -254,7 +263,6 @@ bool clist_core_move(const clist_itr_t position, const size_t count, void *data_
         // clist_core_flatten? ???????????
 
         for (size_t i = 0; i < count; ++i) {
-
             if (mode & CLIST_EXFILTRATION) {
                 NODE_GET(position.curr, data_dest, data_size);
 
@@ -265,11 +273,11 @@ bool clist_core_move(const clist_itr_t position, const size_t count, void *data_
                 if (mode == MODE_ERASE && destructor) {
                     destructor(DATA_POINTER(position.curr));
                 }
-                free(position.curr);                
+                free(position.curr);
             }
 
             position.curr = backup;
-            backup = backup->next;
+            backup        = backup->next;
         }
         return true;
     }
@@ -280,8 +288,8 @@ bool clist_core_move(const clist_itr_t position, const size_t count, void *data_
 // Extracts count objects from position, placing it in data_dest and removing the nodes
 // False on parameter error
 bool clist_core_extract(const clist_itr_t position, const size_t count, void *data_dest) {
-    clist_itr_t end_node = clist_core_range_find(position, count); // deconst isue?
-    if (end_node.root) { // got a result
+    clist_itr_t end_node = clist_core_range_find(position, count);  // deconst isue?
+    if (end_node.root) {                                            // got a result
         // Shouldn't fail past here?
 
         // Now the good question is: Destruct loop THEN free
@@ -296,7 +304,7 @@ bool clist_core_extract(const clist_itr_t position, const size_t count, void *da
         // then our workspace is segmented from the list
 
         position.curr->prev.next = end_node.curr;
-        end_node.curr->prev = position.curr->prev;
+        end_node.curr->prev      = position.curr->prev;
         position.root->size -= count;
         // List is functional again!
 
@@ -311,7 +319,7 @@ bool clist_core_extract(const clist_itr_t position, const size_t count, void *da
 
             free(position.curr);
             position.curr = backup;
-            backup = backup->next;
+            backup        = backup->next;
         }
         return true;
     }
@@ -324,8 +332,8 @@ bool clist_core_deconstruct(const clist_itr_t position, const size_t count) {
     // I just added a BUNCH of checks to range_find, so our input is good pending range_find
     // if (position.root && position.curr && count) {
 
-    clist_itr_t end_node = clist_core_range_find(position, count); // deconst isue?
-    if (end_node.root) { // got a result
+    clist_itr_t end_node = clist_core_range_find(position, count);  // deconst isue?
+    if (end_node.root) {                                            // got a result
         // Shouldn't fail past here?
 
         // Now the good question is: Destruct loop THEN free
@@ -340,7 +348,7 @@ bool clist_core_deconstruct(const clist_itr_t position, const size_t count) {
         // then our workspace is segmented from the list
 
         position.curr->prev.next = end_node.curr;
-        end_node.curr->prev = position.curr->prev;
+        end_node.curr->prev      = position.curr->prev;
         position.root->size -= count;
         // List is functional again!
 
@@ -353,7 +361,7 @@ bool clist_core_deconstruct(const clist_itr_t position, const size_t count) {
             }
             free(position.curr);
             position.curr = backup;
-            backup = backup->next;
+            backup        = backup->next;
         }
         return true;
     }
@@ -369,9 +377,8 @@ clist_itr_t clist_core_range_find(clist_itr_t position, const size_t count) {
     // So if you got to here with a count of zero, we'll catch it.
 
     // Just throwing in a crapton of checks
-    bool valid = count && position.root && position.curr
-                 && position.root != position.curr
-                 && position.root->size && count <= position.root->size;
+    bool valid = count && position.root && position.curr && position.root != position.curr && position.root->size
+                 && count <= position.root->size;
 
     for (size_t i = 0; i < (count - 1) && valid; ++i) {
         position.curr = position.curr->next;
@@ -386,7 +393,7 @@ clist_itr_t clist_core_range_find(clist_itr_t position, const size_t count) {
     }
     // Can't just return {NULL, NULL}, but if you cast it, it's fine
     // C types!
-    return (clist_itr_t) {NULL, NULL};
+    return (clist_itr_t){NULL, NULL};
 }
 
 // Hunts down the requested node, NULL on parameter issue
@@ -412,14 +419,12 @@ void dyn_core_purge(clist_t *const clist, node_t *begin, node_t *end, const size
         // Start killing unlinked nodes
         node_t *backup = begin->next;
         do {
-            if (clist->destructor && deconstruct)
-                clist->destructor(DATA_POINTER(begin));
+            if (clist->destructor && deconstruct) clist->destructor(DATA_POINTER(begin));
             free(begin);
-            begin = backup;
+            begin  = backup;
             backup = begin->next;
         } while (begin != end);
     }
-
 }
 
 // returns node pointer of requested node, NULL on bad request
@@ -439,11 +444,9 @@ node_t *dyn_core_locate(const clist_t *const clist, const size_t position) {
         // Screw it, let's do something cool.
 
         int offset = (position <= clist->size >> 1) ? 1 : 0;
-        itr = ((node_t **)clist)[offset]; // itr is now either front or back node
-        for (size_t distance = offset ? position : size - position - 1;
-                distance;
-                --distance) {
-            itr = ((node_t **)itr)[offset]; // So, 1 for forward, 0 for backwards. Neat, huh?
+        itr = ((node_t **) clist)[offset];  // itr is now either front or back node
+        for (size_t distance = offset ? position : size - position - 1; distance; --distance) {
+            itr = ((node_t **) itr)[offset];  // So, 1 for forward, 0 for backwards. Neat, huh?
         }
 
         /*
@@ -457,7 +460,3 @@ node_t *dyn_core_locate(const clist_t *const clist, const size_t position) {
     }
     return itr;
 }
-
-
-
-
