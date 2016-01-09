@@ -27,12 +27,9 @@ typedef struct clist_itr clist_itr_t;
 
 clist_t *clist_create(const size_t data_type_size, void (*destruct_func)(void *const));
 
-// just going to be a loop of push_backs? Surely it can be optimized.
-// Something like dyn_shift. dyn_alter? dyn_core? enum on insert/extract/remove?
-// Ooooohhh I like that.
 clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size, void (*destruct_func)(void *));
 
-bool clist_export(const clist_t *const clist, void *data_dest);
+size_t clist_export(const clist_t *const clist, void *data_dest);
 
 void clist_destroy(clist_t *const clist);
 

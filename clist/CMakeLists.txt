@@ -30,7 +30,7 @@ set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
 set(CMAKE_BUILD_TYPE Debug)
 enable_testing()
 
-add_executable(clist_tester test/tester.c)
+add_executable(clist_tester test/tester.cpp)
 add_test(tester clist_tester)
 
 # testing like this just doesn't work well with what I have
