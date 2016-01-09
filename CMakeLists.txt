@@ -9,6 +9,10 @@ project(OSLibs)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE ON)
 
+#CMAKE_EXPORT_COMPILE_COMMANDS=ON
+# Interesting, creats a listing of the compilation commands
+# Neat for inspection
+
 # Ahh why does this not work...?
 #include(ProcessorCount)
 #ProcessorCount(N)
