@@ -29,7 +29,7 @@ clist_t *clist_create(const size_t data_type_size, void (*destruct_func)(void *c
 
 clist_t *clist_import(const void *const data, const size_t count, const size_t data_type_size, void (*destruct_func)(void *));
 
-size_t clist_export(const clist_t *const clist, void *data_dest);
+size_t clist_export(const clist_t *const clist, void *data_dst);
 
 void clist_destroy(clist_t *const clist);
 
@@ -38,12 +38,13 @@ bool clist_pop_front(clist_t *const clist);
 bool clist_extract_front(clist_t *const clist, void *const data);
 
 bool clist_push_back(clist_t *const clist, const void *const data);
-bool pop_back(clist_t *const clist);
-bool extract_back(clist_t *const clist, void *const data);
+bool clist_pop_back(clist_t *const clist);
+bool clist_extract_back(clist_t *const clist, void *const data);
 
-insert
-extract
-erase
+// Requiring the actual list is extra, so remove it?
+bool clist_insert(clist_t *const clist, clist_itr_t *const itr, const void *const data);
+bool clist_extract(clist_t *const clist, const size_t count, void *data_dst);
+bool clist_erase(clist_t *const clist, const size_t count);
 at
 
 itr_insert // insert at position, iterator does not change, prev of node does
