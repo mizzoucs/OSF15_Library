@@ -47,7 +47,7 @@ struct clist_itr {
 #define NODE_GET(node_ptr, data_ptr, data_size) (memcpy((data_ptr), DATA_POINTER(node_ptr), (data_size)))
 
 // Such a pain
-#define INCREMENT_VOID(ptr, value) ((void *) (((uint8_t *) (ptr)) + value))
+#define INCREMENT_VOID(ptr, value) ((void *) (((uint8_t *) (ptr)) + (value)))
 
 
 // CORE FUNCTIONS. They are what they sound like, core functions.
@@ -101,7 +101,7 @@ clist_t *clist_import(const void *const data, const size_t count, const size_t d
     if (data && count) {
         clist_t *clist = clist_create(data_type_size, destruct_func);
         if (clist) {
-            if (dyn_core_insert({clist, clist}, count, data)) {
+            if (clist_core_insert({clist, clist}, count, data)) {
                 return clist;
             }
             clist_destroy(clist);
@@ -129,7 +129,7 @@ size_t clist_export(const clist_t *const clist, void *data_dest) {
 
 void clist_destroy(clist_t *const clist) {
     if (clist) {
-        dyn_core_deconstruct({clist, clist->front}, clist->size);
+        clist_core_erase({clist, clist->front}, clist->size);
         // deconstruct only fails on NULL, or zero size
         // and neither of those are a threat to free
         free(clist);
@@ -139,29 +139,58 @@ void clist_destroy(clist_t *const clist) {
 
 
 
+void *clist_front(const clist_t *const clist) {
+    return (clist && clist->size) ? DATA_POINTER(clist->front) : NULL;
+}
 bool clist_push_front(clist_t *const clist, const void *const data) {
-    return clist ? dyn_core_insert({clist, clist->front}, 1, data) : false;
+    return clist ? clist_core_insert({clist, clist->front}, 1, data) : false;
 }
 
 bool clist_pop_front(clist_t *const clist) {
-    return clist ? dyn_core_deconstruct({clist, clist->front}, 1) : false;
+    return clist ? clist_core_erase({clist, clist->front}, 1) : false;
 }
 
 bool clist_extract_front(clist_t *const clist, void *const data) {
-    return clist ? dyn_core_extract({clist, clist->front}, 1) : false;
+    return clist ? clist_core_extract({clist, clist->front}, 1) : false;
 }
 
 
 
 
+void *clist_back(const clist_t *const clist) {
+    return (clist && clist->size) ? DATA_POINTER(clist->back) : NULL;
+}
 bool clist_push_back(clist_t *const clist, const void *const data) {
-    return clist ? dyn_core_insert({clist, clist->back}, 1, data) : false;
+    return clist ? clist_core_insert({clist, clist->back}, 1, data) : false;
 }
-bool pop_back(clist_t *const clist) {
-    return clist ? dyn_core_deconstruct({clist, clist->back}, 1) : false;
+bool clist_pop_back(clist_t *const clist) {
+    return clist ? clist_core_erase({clist, clist->back}, 1) : false;
 }
-bool extract_back(clist_t *const clist, void *const data) {
-    return clist ? dyn_core_extract({clist, clist->back}, 1) : false;
+bool clist_extract_back(clist_t *const clist, void *const data) {
+    return clist ? clist_core_extract({clist, clist->back}, 1) : false;
+}
+
+
+
+
+bool clist_insert(const clist_itr_t *const itr, const size_t count, const void *const data) {
+    return itr ? clist_core_insert(*itr, count, data_src) : false;
+}
+
+bool clist_extract(const clist_itr_t *const itr, const size_t count, void *data_dst) {
+    return itr ? clist_core_extract(*itr, count, data_dst) : false;
+}
+
+bool clist_erase(const clist_itr_t *const itr, const size_t count) {
+    // deref might be a const issue????
+    return itr ? clist_core_erase(*itr, count) : false;
+}
+
+void *clist_at(const clist_itr_t *const itr) {
+    if (itr && itr->root && itr->curr && itr->root != itr->curr) {
+        return DATA_POINTER(itr->curr);
+    }
+    return NULL;
 }
 
 

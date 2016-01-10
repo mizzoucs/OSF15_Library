@@ -33,24 +33,29 @@ size_t clist_export(const clist_t *const clist, void *data_dst);
 
 void clist_destroy(clist_t *const clist);
 
+
+
+void *clist_front(const clist_t *const clist);
 bool clist_push_front(clist_t *const clist, const void *const data);
 bool clist_pop_front(clist_t *const clist);
 bool clist_extract_front(clist_t *const clist, void *const data);
 
+
+
+void *clist_back(const clist_t *const clist);
 bool clist_push_back(clist_t *const clist, const void *const data);
 bool clist_pop_back(clist_t *const clist);
 bool clist_extract_back(clist_t *const clist, void *const data);
 
-// Requiring the actual list is extra, so remove it?
-bool clist_insert(clist_t *const clist, clist_itr_t *const itr, const void *const data);
-bool clist_extract(clist_t *const clist, const size_t count, void *data_dst);
-bool clist_erase(clist_t *const clist, const size_t count);
-at
 
-itr_insert // insert at position, iterator does not change, prev of node does
-itr_extract // removes itr, position gets incremented
-itr_erase // removes itr, position gets incremented
-itr_at // just returns pointer of itr'd data (rooted = NULL)
+
+bool clist_insert(clist_itr_t *const itr, const size_t count, const void *const data);
+bool clist_extract(clist_itr_t *const itr, const size_t count, void *data_dst);
+bool clist_erase(clist_itr_t *const itr, const size_t count);
+void *clist_at(clist_itr_t *const itr);
+
+
+
 
 itr_create // take list and desired position? itr_begin itr_end itr_at itr_create(rooted)?
 itr_destroy
@@ -60,6 +65,15 @@ itr_inc
 itr_dec // merge the two?
 itr_distance // check backwards or return SIZE_MAX if begin after end?
 itr_equal // same as distance == 0, which short circuits distance, but if not eq, would trigger full distance hunt
+
+
+
+size
+clear
+destructor?????
+empty
+data_size
+
 
 sort
 splice
