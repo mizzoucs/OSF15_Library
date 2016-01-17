@@ -1,4 +1,4 @@
-# OS F15 Libraries
+# OS Libraries
 Current libraries:
 - bitmap (v1.5)
 	- It's a bitmap, it stores bits!
@@ -22,24 +22,25 @@ Current libraries:
 		- shrink_to_fit (add a flag to the struct, have it be read by dyn_request_size_increase)
 		- prune (remove those who match a certain criteria (via function pointer))
 		- Rename export to data (that's what C++ calls it)???
+			- Change export to return a copy and not live data(?)
 		- Inserting/removing n objects at a time
 		    - Dyn's core already supports this, the API doesn't.
 		    	- I didn't want to write more unit tests...
+		- Rewrite bool functions to int(?)
 
-- block_store (v2.0.2)
-	- Generic in-memory block storage system with optional file linking
-	- Wishlist:
-		- Better testing. Flush testing is a little lighter than I'd like, but I'm tired of looking at it
-		- Better utility implementation, block based. Actually, may be better to just offload block work to the OS? (the way it is now)
-		- Make in-memory optional, add flag (FILE_BACKED) and detect and switch internal functions if it's set
-			- mmap? anonymous files? Voodoo?
+Coming "soon":
 
-Eventually (maybe):
 - dyn_list
 	- It's a list, it stores things!
-	- Doubly-linked
+	- Doubly-linked, circular, fancy.
+	- Actually called clist now!
+
+Eventually (maybe):
 
 - dyn_hash
 	- It's a hash table, it stores AND hashes things! Exciting!
+
+- dyn_string
+	- dyn_array, but for managing strings!
 
 -- Will, the best TA

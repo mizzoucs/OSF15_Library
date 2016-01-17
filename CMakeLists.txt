@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 
-project(OSLibs)
+project(OSLib)
 
 # Neato
 #set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -27,4 +27,3 @@ add_subdirectory(bitmap)
 
 # My hero http://stackoverflow.com/a/16404000
 
-add_subdirectory(block_store) # depends on bitmap
