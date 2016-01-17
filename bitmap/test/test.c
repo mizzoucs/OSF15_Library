@@ -543,7 +543,7 @@ void bitmap_test_b() {
     assert(bitmap_ffz(bitmap_A) == 1);
     assert(bitmap_ffs(bitmap_A) == 0);
 
-    for (int i = 1; i < test_bit_count; ++i) {
+    for (size_t i = 1; i < test_bit_count; ++i) {
         bitmap_set(bitmap_A, i);
     }
 

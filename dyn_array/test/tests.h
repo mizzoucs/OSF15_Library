@@ -196,7 +196,7 @@
 
 #define assert(e) \
     ((e) ? (true) \
-         : (fprintf(stderr, "%s,%d: assertion '%s' failed\n", __FILE__, __LINE__, #e), fflush(stdout), abort()))
+         : (fprintf(stderr, "%s,%d: assertion '%s' failed\n", __FILE__, __LINE__, #e), fflush(stdout), abort(), 0))
 
 #define DATA_BLOCK_SIZE 100
 uint8_t DATA_BLOCKS[6][DATA_BLOCK_SIZE];
@@ -216,10 +216,12 @@ void block_destructor_mini(void *block) {
 
 int for_each_counter = 0;
 void block_for_each(void *const block, void *num) {
-    if (num)
-        for_each_counter += *((int *) num);
-    else
-        for_each_counter += 10;
+    if (block) {
+        if (num)
+            for_each_counter += *((int *) num);
+        else
+            for_each_counter += 10;
+    }
 }
 
 int block_compare(const void *const a, const void *const b) {
