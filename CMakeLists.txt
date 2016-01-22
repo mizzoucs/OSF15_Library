@@ -33,7 +33,7 @@ endif()
 
 if (NOT CMAKE_BUILD_TYPE)
 	message(STATUS "Build type not set, defaulting to Release")
-	set(CMAKE_BUILD_TYPE Debug)
+	set(CMAKE_BUILD_TYPE Release)
 endif()
 
 
