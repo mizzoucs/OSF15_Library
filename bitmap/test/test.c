@@ -137,8 +137,8 @@ int main() {
 }
 
 void bitmap_test_a() {
-    bitmap_t *bitmap_A, *bitmap_B;
-    const size_t test_bit_count = 58, test_byte_count = 8;
+    bitmap_t *bitmap_A = NULL, *bitmap_B = NULL;
+    const size_t test_bit_count = 58;//, test_byte_count = 8;
     // 58 bits = 7.2 bytes
 
     // INIT/DESTRUCT to get them out of the way
