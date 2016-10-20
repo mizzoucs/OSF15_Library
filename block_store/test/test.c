@@ -597,7 +597,7 @@ void basic_tests_d() {
     assert(bitmap_test(bs_a->dbm, FBM_BLOCK_CHANGE_LOCATION(allocated)));
 
     // Just write some data to the allocated block
-    assert(block_store_write(bs_a, allocated, bitmap_export(bs_a->fbm), 1024, 0) == 1024);
+    assert(block_store_write(bs_a, allocated, bitmap_export(bs_a->fbm), BLOCK_SIZE, 0) == BLOCK_SIZE);
 
     // FLUSH 1
     block_store_flush(bs_a);
