@@ -33,7 +33,7 @@ void bitmap_reset(bitmap_t *const bitmap, const size_t bit);
 /// Returns bit in bitmap
 /// \param bitmap The bitmap
 /// \param bit The bit to query
-/// \raturn State of requested bit
+/// \return State of requested bit
 ///
 bool bitmap_test(const bitmap_t *const bitmap, const size_t bit);
 

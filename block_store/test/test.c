@@ -164,7 +164,7 @@ void basic_tests_a() {
     // ALLOCATE 1
 
     // Check allocate up to full & fail
-    for (size_t i = 8; i < BLOCK_COUNT; ++i) {
+    for (size_t i = FBM_BLOCK_COUNT; i < BLOCK_COUNT; ++i) {
         assert(bitmap_test(bs_a->fbm, i) == false);
         assert(bitmap_test(bs_a->dbm, i));
 
